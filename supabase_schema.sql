@@ -7,14 +7,18 @@
 CREATE TABLE IF NOT EXISTS calls (
   id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   provider_call_id TEXT UNIQUE NOT NULL,
+  provider         TEXT,
   assistant_id     TEXT,
   customer_number  TEXT,
+  to_number        TEXT,
   status           TEXT NOT NULL DEFAULT 'queued',
   outcome          TEXT,
   lead_score       INTEGER,
+  emotion_score    INTEGER,
   started_at       TIMESTAMPTZ,
   ended_at         TIMESTAMPTZ,
   summary          TEXT,
+  recording_url    TEXT,
   cost             NUMERIC(10,4),
   duration_seconds INTEGER,
   raw_end_report   JSONB,
@@ -64,3 +68,13 @@ CREATE TRIGGER calls_updated_at
   BEFORE UPDATE ON calls
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- Optional: insights table for summaries / intents
+CREATE TABLE IF NOT EXISTS insights (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  call_id UUID REFERENCES calls(id) ON DELETE CASCADE,
+  summary TEXT,
+  intent TEXT,
+  sentiment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);

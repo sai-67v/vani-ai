@@ -5,10 +5,10 @@ import type { Call } from "@/lib/types";
 
 function scoreLabel(score: number | null): { label: string; cls: string } {
     if (score == null) return { label: "—", cls: "" };
-    if (score >= 80) return { label: `🔥 ${score}`, cls: "hot" };
-    if (score >= 65) return { label: `🌡 ${score}`, cls: "warm" };
-    if (score >= 40) return { label: `💧 ${score}`, cls: "cool" };
-    return { label: `❄️ ${score}`, cls: "cold" };
+    if (score >= 80) return { label: `${score}`, cls: "hot" };
+    if (score >= 65) return { label: `${score}`, cls: "warm" };
+    if (score >= 40) return { label: `${score}`, cls: "cool" };
+    return { label: `${score}`, cls: "cold" };
 }
 
 function fmtDuration(s: number | null) {
@@ -28,6 +28,13 @@ function statusBadge(status: string, outcome: string | null) {
     if (status === "in-progress") return <span className="badge badge-live">● Live</span>;
     if (outcome === "callback") return <span className="badge badge-callback">Callback</span>;
     return <span className={`badge ${styles.statusNeutral}`}>{status}</span>;
+}
+
+function emotionBadge(score: number | null) {
+    if (score == null) return <span className={styles.emotionNeutral}>—</span>;
+    if (score > 0) return <span className={styles.emotionPositive}>Positive</span>;
+    if (score < 0) return <span className={styles.emotionNegative}>Negative</span>;
+    return <span className={styles.emotionNeutral}>Neutral</span>;
 }
 
 interface Props {
@@ -66,8 +73,10 @@ export function CallsTable({
                     <thead>
                         <tr>
                             <th>Number</th>
+                            <th>Provider</th>
                             <th>Status</th>
-                            <th>Lead Score</th>
+                            <th>Lead</th>
+                            <th>Emotion</th>
                             <th>Duration</th>
                             <th>Time</th>
                             <th>Summary</th>
@@ -95,12 +104,16 @@ export function CallsTable({
                                         <td className={styles.number}>
                                             {call.customer_number ?? "—"}
                                         </td>
+                                        <td>
+                                            <span className={styles.providerBadge}>{call.provider ?? "—"}</span>
+                                        </td>
                                         <td>{statusBadge(call.status, call.outcome)}</td>
                                         <td>
                                             <span className={`badge badge-${score.cls}`}>
                                                 {score.label}
                                             </span>
                                         </td>
+                                        <td>{emotionBadge(call.emotion_score ?? null)}</td>
                                         <td className={styles.mono}>{fmtDuration(call.duration_seconds)}</td>
                                         <td className={styles.mono}>{fmtTime(call.started_at)}</td>
                                         <td className={styles.summary}>

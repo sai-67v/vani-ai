@@ -6,14 +6,18 @@
 export interface Call {
     id: string;
     provider_call_id: string;
+    provider?: string | null;
     assistant_id: string | null;
     customer_number: string | null;
+    to_number?: string | null;
     status: "queued" | "ringing" | "in-progress" | "forwarding" | "ended";
     outcome: string | null; // "completed" | "callback" | "customer-ended-call" | etc.
     lead_score: number | null; // 0–100
+    emotion_score?: number | null; // -1,0,1
     started_at: string | null;
     ended_at: string | null;
     summary: string | null;
+    recording_url?: string | null;
     cost: number | null;
     duration_seconds: number | null;
     created_at?: string;

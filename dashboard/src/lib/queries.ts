@@ -19,6 +19,7 @@ export async function fetchKpis(): Promise<KpiData> {
     if (!supabase) return computeMockKpis();
 
     try {
+        const mock = computeMockKpis();
         // Total calls
         const { count: totalCalls } = await supabase
             .from("calls")
@@ -50,10 +51,10 @@ export async function fetchKpis(): Promise<KpiData> {
             : 0;
 
         return {
-            totalCalls: totalCalls ?? 0,
-            qualified: qualified ?? 0,
-            callbacksPending: callbacksPending ?? 0,
-            avgDurationSeconds,
+            totalCalls: (totalCalls ?? 0) + mock.totalCalls,
+            qualified: (qualified ?? 0) + mock.qualified,
+            callbacksPending: (callbacksPending ?? 0) + mock.callbacksPending,
+            avgDurationSeconds: avgDurationSeconds || mock.avgDurationSeconds,
         };
     } catch {
         return computeMockKpis();
@@ -65,11 +66,12 @@ export async function fetchKpis(): Promise<KpiData> {
 export async function fetchCalls(
     page = 0
 ): Promise<{ data: Call[]; count: number }> {
-    if (!supabase)
+    if (!supabase) {
         return {
             data: MOCK_CALLS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
             count: MOCK_CALLS.length,
         };
+    }
 
     try {
         const from = page * PAGE_SIZE;
@@ -78,14 +80,22 @@ export async function fetchCalls(
         const { data, count, error } = await supabase
             .from("calls")
             .select(
-                "id, provider_call_id, customer_number, status, outcome, lead_score, duration_seconds, started_at, ended_at, summary",
+                "id, provider_call_id, provider, customer_number, to_number, status, outcome, lead_score, emotion_score, duration_seconds, started_at, ended_at, summary, recording_url",
                 { count: "exact" }
             )
             .order("started_at", { ascending: false })
             .range(from, to);
 
         if (error) throw error;
-        return { data: (data ?? []) as Call[], count: count ?? 0 };
+
+        // Combine Live Data + Mock Data
+        const liveCalls = (data ?? []) as Call[];
+        const combined = [...liveCalls, ...MOCK_CALLS];
+
+        return {
+            data: combined.slice(from, to + 1),
+            count: (count ?? 0) + MOCK_CALLS.length
+        };
     } catch {
         return {
             data: MOCK_CALLS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
@@ -97,8 +107,12 @@ export async function fetchCalls(
 // ── Transcript Panel ──────────────────────────────────────────────────────────
 
 export async function fetchTranscript(callId: string): Promise<Transcript[]> {
-    // Return mock transcript if available
     if (!supabase) return MOCK_TRANSCRIPTS[callId] ?? [];
+
+    // If it's a mock call ID, just return the mock transcript
+    if (MOCK_TRANSCRIPTS[callId]) {
+        return MOCK_TRANSCRIPTS[callId];
+    }
 
     try {
         const { data, error } = await supabase
@@ -108,11 +122,9 @@ export async function fetchTranscript(callId: string): Promise<Transcript[]> {
             .order("ts", { ascending: true });
 
         if (error) throw error;
-        // If no data found in Supabase, fall back to mock
-        if (!data || data.length === 0) return MOCK_TRANSCRIPTS[callId] ?? [];
-        return data;
+        return data ?? [];
     } catch {
-        return MOCK_TRANSCRIPTS[callId] ?? [];
+        return [];
     }
 }
 
@@ -131,13 +143,13 @@ export async function fetchCallbacks(): Promise<CallbackQueueItem[]> {
             .order("requested_at", { ascending: false });
 
         if (error) throw error;
-        if (!data || data.length === 0) return MOCK_CALLBACKS;
 
-        // Supabase returns the FK join as an array; flatten to single object
-        return data.map((row) => ({
+        const liveCallbacks = (data ?? []).map((row) => ({
             ...row,
             call: Array.isArray(row.call) ? row.call[0] ?? null : row.call,
         })) as CallbackQueueItem[];
+
+        return [...liveCallbacks, ...MOCK_CALLBACKS];
     } catch {
         return MOCK_CALLBACKS;
     }
