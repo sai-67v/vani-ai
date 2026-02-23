@@ -1,0 +1,130 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.card {
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sh-hover);
+}
+
+.card.primary::after {
+    background: radial-gradient(circle at 80% 20%, rgba(33, 33, 145, 0.2), transparent 60%);
+}
+
+.card.danger::after {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 77, 77, 0.15), transparent 60%);
+}
+
+.card.warn::after {
+    background: radial-gradient(circle at 80% 20%, rgba(255, 187, 126, 0.15), transparent 60%);
+}
+
+.card.accent::after {
+    background: radial-gradient(circle at 80% 20%, rgba(98, 246, 181, 0.15), transparent 60%);
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+.icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.body {
+    flex: 1;
+    min-width: 0;
+}
+
+.label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.primary .value {
+    color: #8A8AFF;
+}
+
+.danger .value {
+    color: var(--danger);
+}
+
+.warn .value {
+    color: var(--warn);
+}
+
+.accent .value {
+    color: var(--accent);
+}
+
+.sub {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.skeleton {
+    height: 28px;
+    width: 80px;
+    border-radius: var(--r-xs);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.02) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+    margin-bottom: 6px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
