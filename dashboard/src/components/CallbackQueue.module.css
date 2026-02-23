@@ -7,20 +7,18 @@
 .header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 18px 16px 14px;
-    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    padding: 24px 24px;
+    border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
 
 .pendingPill {
     margin-left: auto;
-    background: rgba(255, 187, 126, 0.15);
+    background: transparent;
     color: var(--warn);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
-    padding: 2px 9px;
-    border-radius: var(--r-pill);
 }
 
 .list {
@@ -37,17 +35,21 @@
 }
 
 .item {
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    transition: background var(--transition);
+    margin: 12px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r-md);
+    transition: all var(--transition);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .item:hover {
-    background: var(--surface);
-}
-
-.item:last-child {
-    border-bottom: none;
+    background: var(--card-hover);
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: var(--sh-hover);
 }
 
 .itemHeader {
@@ -58,18 +60,16 @@
 }
 
 .phone {
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--text);
     font-feature-settings: "tnum";
 }
 
 .priorityBadge {
     margin-left: auto;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
     padding: 2px 7px;
     border-radius: var(--r-pill);
 }
@@ -95,8 +95,8 @@
 }
 
 .reason {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 13px;
+    color: var(--muted-text);
     line-height: 1.45;
     margin-bottom: 6px;
     display: -webkit-box;
@@ -133,21 +133,21 @@
 }
 
 .statusBtn.pending {
-    background: rgba(255, 187, 126, 0.12);
+    background: transparent;
     color: var(--warn);
-    border-color: rgba(255, 187, 126, 0.25);
+    border-color: var(--border-color);
 }
 
 .statusBtn.completed {
-    background: rgba(98, 246, 181, 0.12);
-    color: var(--accent);
-    border-color: rgba(98, 246, 181, 0.25);
+    background: transparent;
+    color: var(--theme-accent);
+    border-color: var(--border-color);
 }
 
 .statusBtn.cancelled {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--muted);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: var(--muted-text);
+    border-color: var(--border-color);
 }
 
 .statusBtn:hover:not(:disabled) {

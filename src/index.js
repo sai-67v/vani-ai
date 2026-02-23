@@ -1,44 +1,51 @@
 require("dotenv").config();
 
 const express = require("express");
+const http = require("http");
 const vapiWebhookRouter = require("./routes/vapiWebhook");
+const twilioWebhookRouter = require("./routes/twilioWebhook");
+const { setupTwilioWebSockets } = require("./lib/sarvam/realtime");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────────────────────
-app.use(express.json({ limit: "5mb" })); // Vapi payloads can be large (end-of-call-report)
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true })); // Twilio sends form-urlencoded data
 
-// Request logging
 app.use((req, _res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
     next();
 });
 
 // ── Routes ─────────────────────────────────────────────────
-app.use("/api/vapi/webhook", vapiWebhookRouter);
+app.use("/api/vapi/webhook", vapiWebhookRouter); // Legacy
+app.use("/api/twilio", twilioWebhookRouter);     // New Twilio telephony
 
-// Health check
 app.get("/health", (_req, res) => {
     res.json({ ok: true, timestamp: new Date().toISOString() });
 });
 
+// ── HTTP & WebSockets Server ───────────────────────────────
+const server = http.createServer(app);
+setupTwilioWebSockets(server);
+
 // ── Start ──────────────────────────────────────────────────
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════════╗
-║  Vapi Webhook Server running on port ${PORT}        ║
-║  Endpoint: POST /api/vapi/webhook               ║
-║  Health:   GET  /health                          ║
+║  Vani A.I. Engine running on port ${PORT}          
+║  REST: /api/twilio/incoming                      
+║  WSS:  /stream (Twilio Media Streams)          
 ╚══════════════════════════════════════════════════╝
   `);
 
-    // Warn if Supabase is not configured
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.warn("⚠️  SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set.");
-        console.warn("   Webhook routing will work but DB writes will fail.");
-        console.warn("   Copy .env.example → .env and fill in your values.\n");
+        console.warn("⚠️  SUPABASE credentials missing. DB writes will fail.");
+    }
+    if (!process.env.SARVAM_API_KEY) {
+        console.warn("⚠️  SARVAM_API_KEY missing. Engine downstream to Sarvam will fail.");
     }
 });
 
-module.exports = app;
+module.exports = server;

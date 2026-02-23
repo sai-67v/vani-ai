@@ -1,0 +1,266 @@
+{
+    "pages": {
+        "home": {
+            "sections": [
+                {
+                    "name": "navbar",
+                    "component_hint": "sticky top navigation",
+                    "links": [
+                        "Home",
+                        "Download",
+                        "Stories",
+                        "Pricing",
+                        "Blogs"
+                    ],
+                    "cta_labels": [
+                        "Download for iPhone"
+                    ]
+                },
+                {
+                    "name": "hero",
+                    "component_hint": "two-column hero with image or phone mockup",
+                    "heading": "under control. Snap a photo, scan a barcode, or describe your meal and get instant calorie and nutrient info.",
+                    "subheading": "",
+                    "cta_labels": [
+                        "Download for iPhone"
+                    ]
+                },
+                {
+                    "name": "social_proof",
+                    "component_hint": "simple text or badge",
+                    "heading": "200k downloads on AppStore"
+                },
+                {
+                    "name": "features_overview",
+                    "component_hint": "bento box or cards grid",
+                    "heading": "Know what you're eating",
+                    "subheading": "Helps you find what you should eat. Decode what you eat",
+                    "card_patterns": [
+                        "Scan your food",
+                        "Get Nutritional Insights",
+                        "Make Your Action"
+                    ]
+                },
+                {
+                    "name": "how_it_works",
+                    "component_hint": "numbered steps or vertical timeline",
+                    "heading": "How it works",
+                    "list_items": [
+                        "1. Scan your food: Point your camera or scan a barcode...",
+                        "2. Get Nutritional Insights",
+                        "3. Make Your Action"
+                    ]
+                },
+                {
+                    "name": "features_detailed",
+                    "component_hint": "alternating two-column text and media blocks (zig-zag)",
+                    "heading": "Smarter tools for your health",
+                    "subheading": "Track. Plan. Scan. Repeat. Your food journey gets easier with AI features that think ahead, so you don't have to.",
+                    "list_items": [
+                        "Track your progress: Stay consistent with visual insights that show how your daily habits evolve.",
+                        "Create strategic plans: Build smarter daily meal plans that fit your goals and lifestyle.",
+                        "A massive, verified food database so you can log any meal, anywhere, in seconds.",
+                        "AI Smart barcode scanning matches it to verified nutrition data.",
+                        "Make meals with Caly AI: Tell the AI what you need, and watch it build your meal."
+                    ]
+                },
+                {
+                    "name": "testimonials_preview",
+                    "component_hint": "testimonial cards carousel or grid",
+                    "heading": "People who got results.",
+                    "subheading": "Real people. Real data. Real progress. Our users are transforming their health through simple, consistent tracking.",
+                    "cta_labels": [
+                        "See stories"
+                    ]
+                },
+                {
+                    "name": "pricing",
+                    "component_hint": "three-column pricing cards",
+                    "heading": "Pricing plans",
+                    "subheading": "Start free, go pro when you're ready! no limits, no pressure.",
+                    "cta_labels": [
+                        "Try now"
+                    ],
+                    "card_patterns": [
+                        {
+                            "heading": "Free",
+                            "subheading": "$0/month - Anyone who's getting started",
+                            "list_items": [
+                                "Food logging",
+                                "Database access",
+                                "Manual meal entry",
+                                "Daily calorie & macro summary",
+                                "Basic progress tracking"
+                            ]
+                        },
+                        {
+                            "heading": "Pro",
+                            "subheading": "$25/month - Users who want automation",
+                            "list_items": [
+                                "Everything in Free",
+                                "AI meals",
+                                "Photo & barcode scan",
+                                "Smart recommendations",
+                                "Full progress analytics",
+                                "Priority support"
+                            ]
+                        },
+                        {
+                            "heading": "Gold",
+                            "subheading": "$75/month - People who want total control.",
+                            "list_items": [
+                                "Everything in Pro",
+                                "Advance analytics",
+                                "Personal coach",
+                                "App integrations",
+                                "Exportable data & macros"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "faq",
+                    "component_hint": "accordion",
+                    "heading": "Frequently asked questions",
+                    "list_items": [
+                        "Does the app work offline?",
+                        "Can I sync data from other fitness apps or wearables?",
+                        "What happens if I switch devices?",
+                        "What if I don't know my calorie goal?",
+                        "Is my personal data safe?",
+                        "How accurate is the food database?",
+                        "What makes our AI meal builder different?",
+                        "Can I track my progress over time?",
+                        "Do I need to pay to use the app?"
+                    ]
+                },
+                {
+                    "name": "footer_cta",
+                    "component_hint": "full-width promotional banner",
+                    "heading": "#1 nutrition app on AppStore",
+                    "subheading": "The #1 rated nutrition app on the App Store \u2014 built to help you eat better, stay consistent, and see results.",
+                    "cta_labels": [
+                        "Download for iPhone"
+                    ]
+                },
+                {
+                    "name": "footer",
+                    "component_hint": "multi-column footer",
+                    "heading": "Calorie App - Your calories under control",
+                    "links": [
+                        "Home",
+                        "Download",
+                        "Stories",
+                        "Blogs",
+                        "Pricing",
+                        "Instagram",
+                        "Twitter",
+                        "LinkedIn",
+                        "YouTube",
+                        "Contact",
+                        "Terms & Conditions",
+                        "Privacy Policy"
+                    ]
+                }
+            ]
+        },
+        "pricing": {
+            "sections": [
+                {
+                    "name": "pricing_comparison",
+                    "component_hint": "comparison table",
+                    "heading": "Compare the plans",
+                    "subheading": "See what's included in each plan and find the one that fits your goals best upgrade anytime, no commitments."
+                }
+            ]
+        },
+        "stories": {
+            "sections": [
+                {
+                    "name": "testimonials_grid",
+                    "component_hint": "cards grid",
+                    "heading": "Real people, Real results.",
+                    "subheading": "Tell the AI what you need, and watch it build your meal ingredient by ingredient, perfect balance for your goals.",
+                    "cta_labels": [
+                        "Want to be featured?"
+                    ],
+                    "card_patterns": [
+                        "April McKinsey - Fat Loss",
+                        "Olivia Bennet - Fat Loss",
+                        "Lucas Reed - Muscle Gain",
+                        "Tanisha White - Performance",
+                        "Daniel Hayes - Muscle Gain",
+                        "Ava Mitchell - Fat Loss"
+                    ]
+                }
+            ]
+        },
+        "blogs": {
+            "sections": [
+                {
+                    "name": "blog_posts",
+                    "component_hint": "articles grid or list",
+                    "heading": "Find out a few things",
+                    "card_patterns": [
+                        "How AI Is Transforming Nutrition Tracking",
+                        "Celebrating 200K Downloads",
+                        "Mastering the AI Meal Builder",
+                        "Understanding Macros"
+                    ]
+                }
+            ]
+        },
+        "contact": {
+            "sections": [
+                {
+                    "name": "contact_form",
+                    "component_hint": "two-column contact form and info",
+                    "heading": "Got a question?",
+                    "subheading": "Our inbox is always open, whether you're a user, creator, or just curious.",
+                    "cta_labels": [
+                        "Send"
+                    ],
+                    "card_patterns": [
+                        "Mail: hello@calorie.framer.website",
+                        "Phone: +91 8879702206",
+                        "Visit us: J's Labs, 2416 Market Street, San Francisco"
+                    ]
+                }
+            ]
+        }
+    },
+    "routes_plan": [
+        {
+            "path": "/",
+            "description": "Landing page with all primary marketing sections. (Hero, Features, Pricing, Testimonials, FAQ)"
+        },
+        {
+            "path": "/pricing",
+            "description": "Detailed pricing page featuring the plan comparison table."
+        },
+        {
+            "path": "/stories",
+            "description": "Customer testimonials and success stories grid."
+        },
+        {
+            "path": "/blogs",
+            "description": "Blog index page showing article cards."
+        },
+        {
+            "path": "/blogs/[slug]",
+            "description": "Dynamic route for individual blog posts."
+        },
+        {
+            "path": "/contact",
+            "description": "Contact form and company contact information."
+        },
+        {
+            "path": "/download",
+            "description": "Standalone download promotional page or redirection route."
+        },
+        {
+            "path": "/dashboard",
+            "description": "Authenticated user area for calorie tracking, meal planning, and analytics."
+        }
+    ]
+}

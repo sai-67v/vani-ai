@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import "../app/globals.css";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import "./globals.css";
 
 export const metadata: Metadata = {
-    title: "Voice AI Dashboard",
-    description: "Real-time call analytics and callback management for Vapi voice agents",
+    title: "Vani AI",
+    description: "Voice intelligence, analytics, and developer platform",
 };
 
 export default function RootLayout({
@@ -12,21 +15,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-            <body>
-                <div className="app-shell">
-                    <header className="header">
-                        <div className="header-logo">🎙</div>
-                        <span className="header-title">VoiceAI Dashboard</span>
-                        <div className="flex items-center gap-2">
-                            <div className="status-dot" />
-                            <span className="header-subtitle" style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-                                Live · {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </span>
-                        </div>
-                    </header>
-                    {children}
-                </div>
+        <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+            <body className="bg-background text-text antialiased font-sans">
+                <ThemeToggle />
+                {children}
             </body>
         </html>
     );

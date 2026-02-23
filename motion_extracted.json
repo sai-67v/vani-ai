@@ -1,0 +1,703 @@
+{
+  "navbars": [
+    {
+      "id": "framer-1etzg1x-container",
+      "position": "fixed",
+      "backdropFilter": "none",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "id": "framer-5kq819",
+      "position": "sticky",
+      "backdropFilter": "none",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "id": "framer-fmx949-container hidden-1pbi69a",
+      "position": "sticky",
+      "backdropFilter": "none",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "id": "status_hidden",
+      "position": "fixed",
+      "backdropFilter": "none",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    }
+  ],
+  "fixedElements": [
+    {
+      "id": "div",
+      "zIndex": "2147483647"
+    }
+  ],
+  "animations": [],
+  "grids": [],
+  "buttons": [
+    {
+      "id": "framer-47zzel framer-1x3085k",
+      "transition": "all",
+      "text": "Calorie App"
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-1i7a6bt",
+      "transition": "all",
+      "text": "Calorie App"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Calorie App"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Download"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Stories"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Pricing"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Blogs"
+    },
+    {
+      "id": "framer-mCWCz framer-71hIa framer-cv0Fx framer-1s7lqcx framer-v-1be8e5y framer-l8jhuw",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1rusu4p",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1jtdiew",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-o9nare",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "svgContainer",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-1fx6aj6",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-text framer-styles-preset-1l3s2e",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-mCWCz framer-71hIa framer-cv0Fx framer-1s7lqcx framer-v-1s7lqcx framer-l8jhuw",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1rusu4p",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1jtdiew",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-o9nare",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "svgContainer",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-1fx6aj6",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-2eh3a1 hidden-1pbi69a",
+      "transition": "all",
+      "text": "Hover over thes"
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-5hfrtq",
+      "transition": "all",
+      "text": "Hover over thes"
+    },
+    {
+      "id": "framer-text framer-styles-preset-1l3s2e",
+      "transition": "all",
+      "text": "Hover over thes"
+    },
+    {
+      "id": "framer-DPGXN framer-71hIa framer-1vw6mp framer-v-1vw6mp framer-1fkhv2q",
+      "transition": "all",
+      "text": "See stories"
+    },
+    {
+      "id": "framer-6gkh6q",
+      "transition": "all",
+      "text": "See stories"
+    },
+    {
+      "id": "framer-18tc8s",
+      "transition": "all",
+      "text": "See stories"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "See stories"
+    },
+    {
+      "id": "framer-hVTIh framer-71hIa framer-ebx1iw framer-v-v3e7f2 framer-qohwzn",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-w7d8wy",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-17gjfd1",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-hVTIh framer-71hIa framer-ebx1iw framer-v-ebx1iw framer-qohwzn",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-w7d8wy",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-17gjfd1",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-hVTIh framer-71hIa framer-ebx1iw framer-v-v3e7f2 framer-qohwzn",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-w7d8wy",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-17gjfd1",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Try now"
+    },
+    {
+      "id": "framer-LTx57 framer-lYiS5 framer-hdit8d framer-v-hdit8d",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": "framer-i3pf9h",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": "framer-aflhem",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": "framer-41mz8t",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": "framer-1wra6uk",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "How accurate is"
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-8vtzp0",
+      "transition": "all",
+      "text": "Our database in"
+    },
+    {
+      "id": "framer-wbui9x",
+      "transition": "all",
+      "text": "Our database in"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Our database in"
+    },
+    {
+      "id": "framer-LTx57 framer-lYiS5 framer-hdit8d framer-v-hdit8d",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": "framer-i3pf9h",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": "framer-aflhem",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": "framer-41mz8t",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": "framer-1wra6uk",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "What makes our "
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-8vtzp0",
+      "transition": "all",
+      "text": "It doesn’t just"
+    },
+    {
+      "id": "framer-wbui9x",
+      "transition": "all",
+      "text": "It doesn’t just"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "It doesn’t just"
+    },
+    {
+      "id": "framer-LTx57 framer-lYiS5 framer-hdit8d framer-v-hdit8d",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": "framer-i3pf9h",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": "framer-aflhem",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": "framer-41mz8t",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": "framer-1wra6uk",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Can I track my "
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-8vtzp0",
+      "transition": "all",
+      "text": "Absolutely. You"
+    },
+    {
+      "id": "framer-wbui9x",
+      "transition": "all",
+      "text": "Absolutely. You"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Absolutely. You"
+    },
+    {
+      "id": "framer-LTx57 framer-lYiS5 framer-hdit8d framer-v-hdit8d",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": "framer-i3pf9h",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": "framer-aflhem",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": "framer-41mz8t",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": "framer-1wra6uk",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Do I need to pa"
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-8vtzp0",
+      "transition": "all",
+      "text": "Nope! You can s"
+    },
+    {
+      "id": "framer-wbui9x",
+      "transition": "all",
+      "text": "Nope! You can s"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Nope! You can s"
+    },
+    {
+      "id": "framer-LTx57 framer-lYiS5 framer-hdit8d framer-v-hdit8d",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": "framer-i3pf9h",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": "framer-aflhem",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": "framer-41mz8t",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": "framer-1wra6uk",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Does it integra"
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-8vtzp0",
+      "transition": "all",
+      "text": "Yes, absolutely"
+    },
+    {
+      "id": "framer-wbui9x",
+      "transition": "all",
+      "text": "Yes, absolutely"
+    },
+    {
+      "id": "framer-text framer-styles-preset-12q8soh",
+      "transition": "all",
+      "text": "Yes, absolutely"
+    },
+    {
+      "id": "framer-mCWCz framer-71hIa framer-cv0Fx framer-1s7lqcx framer-v-1s7lqcx framer-l8jhuw",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1rusu4p",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-1jtdiew",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-o9nare",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "svgContainer",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": {},
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-1fx6aj6",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-text framer-styles-preset-4kbz7i",
+      "transition": "all",
+      "text": "Download for iP"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Home"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Download"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Stories"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Blogs"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Pricing"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Instagram"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Twitter"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "LinkedIn"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "YouTube"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Contact"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Terms & Conditi"
+    },
+    {
+      "id": "framer-text framer-styles-preset-2bpl5t",
+      "transition": "all",
+      "text": "Privacy Policy"
+    },
+    {
+      "id": "framer-6jWyo framer-n0ccwk framer-v-n0ccwk framer-bmpgw8 __framer-badge",
+      "transition": "all",
+      "text": "Create a free w"
+    },
+    {
+      "id": "framer-13yxzio",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-19yaanm",
+      "transition": "all",
+      "text": "Create a free w"
+    },
+    {
+      "id": "framer-1kflzx5",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-hcsc7 framer-e50co",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "p",
+      "transition": "all",
+      "text": "Create a free w"
+    },
+    {
+      "id": "framer-g7oZR framer-1um7t9d",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-j4ugry",
+      "transition": "all",
+      "text": ""
+    },
+    {
+      "id": "framer-jnuwbw",
+      "transition": "all",
+      "text": ""
+    }
+  ]
+}

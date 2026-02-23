@@ -60,96 +60,99 @@ export function CallsTable({
     const totalPages = Math.ceil(total / pageSize);
 
     return (
-        <div className={`glass ${styles.wrapper}`}>
-            <div className={styles.tableHeader}>
-                <span className="section-title" style={{ marginBottom: 0 }}>
-                    Recent Calls
-                </span>
-                <span className={styles.count}>{total.toLocaleString()} total</span>
-            </div>
-
-            <div className={styles.tableScroll}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>Number</th>
-                            <th>Provider</th>
-                            <th>Status</th>
-                            <th>Lead</th>
-                            <th>Emotion</th>
-                            <th>Duration</th>
-                            <th>Time</th>
-                            <th>Summary</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading
-                            ? Array.from({ length: 6 }).map((_, i) => (
-                                <tr key={i} className={styles.skeletonRow}>
-                                    {Array.from({ length: 6 }).map((__, j) => (
-                                        <td key={j}><div className={styles.skeletonCell} /></td>
-                                    ))}
-                                </tr>
-                            ))
-                            : calls.map((call) => {
-                                const score = scoreLabel(call.lead_score);
-                                const isSelected = call.id === selectedCallId;
-                                return (
-                                    <tr
-                                        key={call.id}
-                                        className={`${styles.row} ${isSelected ? styles.selected : ""}`}
-                                        onClick={() => onSelectCall(call)}
-                                        title="Click to view transcript"
-                                    >
-                                        <td className={styles.number}>
-                                            {call.customer_number ?? "—"}
-                                        </td>
-                                        <td>
-                                            <span className={styles.providerBadge}>{call.provider ?? "—"}</span>
-                                        </td>
-                                        <td>{statusBadge(call.status, call.outcome)}</td>
-                                        <td>
-                                            <span className={`badge badge-${score.cls}`}>
-                                                {score.label}
-                                            </span>
-                                        </td>
-                                        <td>{emotionBadge(call.emotion_score ?? null)}</td>
-                                        <td className={styles.mono}>{fmtDuration(call.duration_seconds)}</td>
-                                        <td className={styles.mono}>{fmtTime(call.started_at)}</td>
-                                        <td className={styles.summary}>
-                                            {call.summary?.slice(0, 70) ?? (
-                                                <span style={{ color: "var(--muted)" }}>No summary yet</span>
-                                            )}
-                                            {(call.summary?.length ?? 0) > 70 ? "…" : ""}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                    </tbody>
-                </table>
-            </div>
-
-            {totalPages > 1 && (
-                <div className={styles.pagination}>
-                    <button
-                        className={styles.pageBtn}
-                        disabled={page === 0}
-                        onClick={() => onPageChange(page - 1)}
-                    >
-                        ← Prev
-                    </button>
-                    <span className={styles.pageInfo}>
-                        Page {page + 1} of {totalPages}
+        <div className={`glass relative shadow-[0_12px_40px_rgba(0,0,0,0.15)] ${styles.wrapper}`} style={{ borderRadius: "24px" }}>
+            <div className="absolute inset-0 bg-gradient-to-b from-[var(--theme-primary)]/10 via-transparent to-transparent pointer-events-none opacity-60" aria-hidden />
+            <div className="relative z-10 w-full h-full flex flex-col">
+                <div className={styles.tableHeader}>
+                    <span className="section-title" style={{ marginBottom: 0, fontSize: 16, fontWeight: 800 }}>
+                        Recent Calls
                     </span>
-                    <button
-                        className={styles.pageBtn}
-                        disabled={page >= totalPages - 1}
-                        onClick={() => onPageChange(page + 1)}
-                    >
-                        Next →
-                    </button>
+                    <span className={styles.count}>{total.toLocaleString()} total</span>
                 </div>
-            )}
+
+                <div className={styles.tableScroll}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Number</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Provider</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Status</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Lead</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Emotion</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Duration</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Time</th>
+                                <th style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}>Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading
+                                ? Array.from({ length: 6 }).map((_, i) => (
+                                    <tr key={i} className={styles.skeletonRow}>
+                                        {Array.from({ length: 6 }).map((__, j) => (
+                                            <td key={j}><div className={styles.skeletonCell} /></td>
+                                        ))}
+                                    </tr>
+                                ))
+                                : calls.map((call) => {
+                                    const score = scoreLabel(call.lead_score);
+                                    const isSelected = call.id === selectedCallId;
+                                    return (
+                                        <tr
+                                            key={call.id}
+                                            className={`${styles.row} ${isSelected ? styles.selected : ""}`}
+                                            onClick={() => onSelectCall(call)}
+                                            title="Click to view transcript"
+                                        >
+                                            <td className={styles.number}>
+                                                {call.customer_number ?? "—"}
+                                            </td>
+                                            <td>
+                                                <span className={styles.providerBadge}>{call.provider ?? "—"}</span>
+                                            </td>
+                                            <td>{statusBadge(call.status, call.outcome)}</td>
+                                            <td>
+                                                <span className={`badge badge-${score.cls}`}>
+                                                    {score.label}
+                                                </span>
+                                            </td>
+                                            <td>{emotionBadge(call.emotion_score ?? null)}</td>
+                                            <td className={styles.mono}>{fmtDuration(call.duration_seconds)}</td>
+                                            <td className={styles.mono}>{fmtTime(call.started_at)}</td>
+                                            <td className={styles.summary}>
+                                                {call.summary?.slice(0, 70) ?? (
+                                                    <span style={{ color: "var(--muted)" }}>No summary yet</span>
+                                                )}
+                                                {(call.summary?.length ?? 0) > 70 ? "…" : ""}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                        </tbody>
+                    </table>
+                </div>
+
+                {totalPages > 1 && (
+                    <div className={styles.pagination}>
+                        <button
+                            className={styles.pageBtn}
+                            disabled={page === 0}
+                            onClick={() => onPageChange(page - 1)}
+                        >
+                            ← Prev
+                        </button>
+                        <span className={styles.pageInfo}>
+                            Page {page + 1} of {totalPages}
+                        </span>
+                        <button
+                            className={styles.pageBtn}
+                            disabled={page >= totalPages - 1}
+                            onClick={() => onPageChange(page + 1)}
+                        >
+                            Next →
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

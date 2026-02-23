@@ -276,7 +276,7 @@ async function handleEndOfCallReport(message) {
     // Only set outcome to "completed" if it wasn't already set to something more specific
     const { data: existing } = await supabase
         .from("calls")
-        .select("outcome")
+        .select("id, outcome")
         .eq("provider_call_id", providerCallId)
         .maybeSingle();
 
@@ -295,6 +295,47 @@ async function handleEndOfCallReport(message) {
         console.error("[end-of-call-report] Update error:", error);
     } else {
         console.log(`[end-of-call-report] Finalized call ${providerCallId}`);
+    }
+
+    // Fire and forget STT pipeline
+    const recordingUrl = message.artifact?.recordingUrl || call.recordingUrl;
+    if (existing?.id && recordingUrl) {
+        processRecording(providerCallId, existing.id, recordingUrl).catch(err => {
+            console.error("[end-of-call-report] STT processing error:", err);
+        });
+    }
+}
+
+async function processRecording(providerCallId, callId, recordingUrl) {
+    console.log(`[stt] Fetching recording for call ${providerCallId} from ${recordingUrl}`);
+
+    // dynamically require so we don't break earlier if not configured
+    const { transcribeAudio } = require("../lib/sarvam/stt");
+
+    const res = await fetch(recordingUrl);
+    if (!res.ok) throw new Error(`Failed to fetch recording: ${res.statusText}`);
+
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    console.log(`[stt] Transcribing audio for call ${providerCallId}...`);
+    const transcriptResult = await transcribeAudio(buffer, "hi-IN");
+
+    if (transcriptResult && transcriptResult.transcript) {
+        const { error } = await supabase.from("transcripts").insert({
+            call_id: callId,
+            speaker: "mixed", // Sarvam STT standard returns mixed text unless diarized
+            text: transcriptResult.transcript,
+            ts: new Date().toISOString(),
+        });
+
+        if (error) {
+            console.error("[stt] Insert error:", error);
+        } else {
+            console.log(`[stt] Saved Sarvam transcript for call ${providerCallId}`);
+        }
+    } else {
+        console.warn(`[stt] No transcript returned for call ${providerCallId}`);
     }
 }
 

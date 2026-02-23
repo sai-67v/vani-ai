@@ -1,0 +1,86 @@
+{
+    "colors": {
+        "background": "#111111",
+        "surface": "#1A1A1A",
+        "text_primary": "#FFFFFF",
+        "text_muted": "#A3A3A3",
+        "border_light": "#333333",
+        "primary_action": "#FFFFFF",
+        "accent_raycast_red": "#FF6363",
+        "accent_raycast_blue": "#4C9EEB",
+        "calories_vibrant_lime": "#DFFF00"
+    },
+    "typography": {
+        "font_families": {
+            "sans": "Inter, SF Pro Display, system-ui",
+            "mono": "JetBrains Mono, Menlo, monospace"
+        },
+        "scale": {
+            "h1": {
+                "size": "3.5rem",
+                "weight": 700,
+                "tracking": "-0.04em",
+                "lineHeight": "1.1"
+            },
+            "h2": {
+                "size": "2.5rem",
+                "weight": 600,
+                "tracking": "-0.03em",
+                "lineHeight": "1.2"
+            },
+            "body": {
+                "size": "1rem",
+                "weight": 400,
+                "tracking": "0",
+                "lineHeight": "1.6"
+            },
+            "utility": {
+                "size": "0.875rem",
+                "weight": 500,
+                "tracking": "0",
+                "lineHeight": "1.5"
+            }
+        }
+    },
+    "ctaStyles": {
+        "primary": {
+            "background": "#FFFFFF",
+            "color": "#000000",
+            "borderRadius": "9999px",
+            "padding": "12px 24px",
+            "fontWeight": 600,
+            "border": "none",
+            "hover": "Scale 0.98, background opacity 0.9"
+        },
+        "secondary": {
+            "background": "transparent",
+            "color": "#FFFFFF",
+            "borderRadius": "8px",
+            "padding": "10px 20px",
+            "fontWeight": 500,
+            "border": "1px solid #333333",
+            "backdropFilter": "blur(16px)",
+            "hover": "Background #222222, Border #444444"
+        }
+    },
+    "layoutSections": [
+        "1. Top Navigation (Sticky, glassmorphic backdrop)",
+        "2. Hero (Massive typography, primary CTA, subtle glowing ambient background)",
+        "3. Social Proof / Logos (Muted, monochrome logo strip)",
+        "4. Feature Bento Grid (Asymmetric tiles, Raycast-style floating cards)",
+        "5. Interactive Demo / UI Showcase (Calories-style bouncy interactions)",
+        "6. Clean CTA Footer (Deep dark, high contrast CTA)"
+    ],
+    "motionPatterns": {
+        "scroll_reveal": "Elements fade in and translate up 16px using cubic-bezier(0.2, 0.9, 0.3, 1) over 600ms",
+        "hover_button": "Instant color change (0ms) or incredibly rapid 100ms ease-out, mirroring Raycast utility feel",
+        "hover_card": "Slight Y-axis lift (-2px) with expanded shadow spread, 200ms ease-out",
+        "page_transitions": "Instant or cross-fade 150ms"
+    },
+    "uiComponents": [
+        "Bento Grid Cards",
+        "Pill-shaped Badges",
+        "Command Palette (Cmd+K interface)",
+        "Glassmorphic Sidebars"
+    ]
+}

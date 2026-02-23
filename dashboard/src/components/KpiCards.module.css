@@ -5,96 +5,107 @@
 }
 
 .card {
-    padding: 20px;
+    padding: 24px;
     display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    transition: transform var(--transition), box-shadow var(--transition);
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
     position: relative;
     overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sh-soft);
+    min-height: 160px;
 }
 
 .card::after {
     content: "";
     position: absolute;
     inset: 0;
-    opacity: 0;
+    opacity: 0.6;
     transition: opacity var(--transition);
+    pointer-events: none;
 }
 
 .card:hover {
     transform: translateY(-2px);
     box-shadow: var(--sh-hover);
+    border-color: var(--border-strong);
 }
 
 .card.primary::after {
-    background: radial-gradient(circle at 80% 20%, rgba(33, 33, 145, 0.2), transparent 60%);
+    background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent 70%);
 }
 
 .card.danger::after {
-    background: radial-gradient(circle at 80% 20%, rgba(255, 77, 77, 0.15), transparent 60%);
+    background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.15), transparent 70%);
 }
 
 .card.warn::after {
-    background: radial-gradient(circle at 80% 20%, rgba(255, 187, 126, 0.15), transparent 60%);
+    background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 70%);
 }
 
 .card.accent::after {
-    background: radial-gradient(circle at 80% 20%, rgba(98, 246, 181, 0.15), transparent 60%);
+    background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.15), transparent 70%);
 }
 
 .card:hover::after {
     opacity: 1;
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
 .icon {
-    font-size: 22px;
-    line-height: 1;
-    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: var(--r-md);
+    background: rgba(255, 250, 234, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--muted-text);
 }
 
 .body {
     flex: 1;
-    min-width: 0;
+    width: 100%;
 }
 
 .label {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 640;
+    letter-spacing: -0.04em;
+    line-height: 1.2;
+    color: var(--muted-text);
 }
 
 .value {
     font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    font-weight: 850;
+    letter-spacing: -0.04em;
     color: var(--text);
-    line-height: 1;
-    margin-bottom: 6px;
+    line-height: 1.2;
+    margin-bottom: 8px;
 }
 
-.primary .value {
-    color: #8A8AFF;
-}
-
-.danger .value {
-    color: var(--danger);
-}
-
-.warn .value {
-    color: var(--warn);
-}
-
+.primary .value,
+.danger .value,
+.warn .value,
 .accent .value {
-    color: var(--accent);
+    color: var(--text);
 }
 
 .sub {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--muted);
+    font-weight: 500;
 }
 
 .skeleton {

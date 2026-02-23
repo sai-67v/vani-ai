@@ -15,8 +15,9 @@ const PAGE_SIZE = 10;
 
 // ── KPI Data ─────────────────────────────────────────────────────────────────
 
-export async function fetchKpis(): Promise<KpiData> {
-    if (!supabase) return computeMockKpis();
+export async function fetchKpis(demoMode = false): Promise<KpiData> {
+    const emptyKpi = { totalCalls: 0, qualified: 0, callbacksPending: 0, avgDurationSeconds: 0 };
+    if (!supabase) return demoMode ? computeMockKpis() : emptyKpi;
 
     try {
         const mock = computeMockKpis();
@@ -50,27 +51,44 @@ export async function fetchKpis(): Promise<KpiData> {
             ? Math.round(durations.reduce((a: number, b: number) => a + b, 0) / durations.length)
             : 0;
 
+        const liveCount = totalCalls ?? 0;
+
+        if (demoMode) {
+            if (liveCount === 0) {
+                return mock;
+            } else {
+                return {
+                    totalCalls: liveCount + mock.totalCalls,
+                    qualified: (qualified ?? 0) + mock.qualified,
+                    callbacksPending: (callbacksPending ?? 0) + mock.callbacksPending,
+                    avgDurationSeconds: avgDurationSeconds || mock.avgDurationSeconds,
+                };
+            }
+        }
+
         return {
-            totalCalls: (totalCalls ?? 0) + mock.totalCalls,
-            qualified: (qualified ?? 0) + mock.qualified,
-            callbacksPending: (callbacksPending ?? 0) + mock.callbacksPending,
-            avgDurationSeconds: avgDurationSeconds || mock.avgDurationSeconds,
+            totalCalls: liveCount,
+            qualified: qualified ?? 0,
+            callbacksPending: callbacksPending ?? 0,
+            avgDurationSeconds: avgDurationSeconds,
         };
     } catch {
-        return computeMockKpis();
+        return demoMode ? computeMockKpis() : emptyKpi;
     }
 }
 
 // ── Calls Table ───────────────────────────────────────────────────────────────
 
 export async function fetchCalls(
-    page = 0
+    page = 0,
+    demoMode = false
 ): Promise<{ data: Call[]; count: number }> {
+    const emptyResult = { data: [], count: 0 };
     if (!supabase) {
-        return {
+        return demoMode ? {
             data: MOCK_CALLS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
             count: MOCK_CALLS.length,
-        };
+        } : emptyResult;
     }
 
     try {
@@ -88,19 +106,31 @@ export async function fetchCalls(
 
         if (error) throw error;
 
-        // Combine Live Data + Mock Data
         const liveCalls = (data ?? []) as Call[];
-        const combined = [...liveCalls, ...MOCK_CALLS];
+        const liveCount = count ?? 0;
+
+        let combined = liveCalls;
+        let totalCount = liveCount;
+
+        if (demoMode) {
+            if (liveCount === 0) {
+                combined = MOCK_CALLS;
+                totalCount = MOCK_CALLS.length;
+            } else {
+                combined = [...liveCalls, ...MOCK_CALLS];
+                totalCount = liveCount + MOCK_CALLS.length;
+            }
+        }
 
         return {
             data: combined.slice(from, to + 1),
-            count: (count ?? 0) + MOCK_CALLS.length
+            count: totalCount
         };
     } catch {
-        return {
+        return demoMode ? {
             data: MOCK_CALLS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
             count: MOCK_CALLS.length,
-        };
+        } : emptyResult;
     }
 }
 
@@ -130,8 +160,8 @@ export async function fetchTranscript(callId: string): Promise<Transcript[]> {
 
 // ── Callback Queue ────────────────────────────────────────────────────────────
 
-export async function fetchCallbacks(): Promise<CallbackQueueItem[]> {
-    if (!supabase) return MOCK_CALLBACKS;
+export async function fetchCallbacks(demoMode = false): Promise<CallbackQueueItem[]> {
+    if (!supabase) return demoMode ? MOCK_CALLBACKS : [];
 
     try {
         const { data, error } = await supabase
@@ -149,9 +179,13 @@ export async function fetchCallbacks(): Promise<CallbackQueueItem[]> {
             call: Array.isArray(row.call) ? row.call[0] ?? null : row.call,
         })) as CallbackQueueItem[];
 
-        return [...liveCallbacks, ...MOCK_CALLBACKS];
+        if (demoMode) {
+            return liveCallbacks.length === 0 ? MOCK_CALLBACKS : [...liveCallbacks, ...MOCK_CALLBACKS];
+        }
+
+        return liveCallbacks;
     } catch {
-        return MOCK_CALLBACKS;
+        return demoMode ? MOCK_CALLBACKS : [];
     }
 }
 

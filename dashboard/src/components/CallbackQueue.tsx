@@ -14,9 +14,9 @@ const STATUS_CYCLE: Record<
 };
 
 const STATUS_CONFIG = {
-    pending: { label: "Pending", cls: styles.pending, emoji: "⏳" },
-    completed: { label: "Done", cls: styles.completed, emoji: "✅" },
-    cancelled: { label: "Cancelled", cls: styles.cancelled, emoji: "🚫" },
+    pending: { label: "Pending", cls: styles.pending },
+    completed: { label: "Done", cls: styles.completed },
+    cancelled: { label: "Cancelled", cls: styles.cancelled },
 };
 
 const PRIORITY_CONFIG = {
@@ -81,7 +81,7 @@ export function CallbackQueue({ items: initialItems }: Props) {
                             >
                                 <div className={styles.itemHeader}>
                                     <span className={styles.phone}>
-                                        📱 {item.customer_number ?? "Unknown"}
+                                        {item.customer_number ?? "Unknown"}
                                     </span>
                                     <span className={`${styles.priorityBadge} ${pc.cls}`}>
                                         {pc.label}
@@ -109,7 +109,7 @@ export function CallbackQueue({ items: initialItems }: Props) {
                                         disabled={toggling === item.id}
                                         title="Click to advance status"
                                     >
-                                        {sc.emoji} {sc.label}
+                                        {sc.label}
                                     </button>
                                 </div>
                             </div>

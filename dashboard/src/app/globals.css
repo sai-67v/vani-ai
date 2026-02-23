@@ -1,4 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+/* ── Typography System ─────────────────────────────────────────────────────
+   Geist Variable Font (via `geist` npm package, injected by layout.tsx)
+   Design spec: Display1 64/850/-0.04, HeadingMD 44/850/-0.04, HeadingSM 28/850/-0.04
+                Body Base 20/550/-0.02, Body SM 16/medium/-0.02
+                Caption 14/semibold/-0.04, Overline 13/640/-0.04
+────────────────────────────────────────────────────────────────────────── */
 
 @tailwind base;
 @tailwind components;
@@ -111,7 +116,7 @@
 html,
 body {
   height: 100%;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
@@ -627,4 +632,95 @@ button {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* ┌─────────────────────────────────────────────────────────────────────────
+   │  TYPOGRAPHY SCALE  (Geist Variable Font)
+   │  Matches design spec image exactly
+   └───────────────────────────────────────────────────────────────────────── */
+
+/* ── Mono override ── */
+code,
+kbd,
+samp,
+pre,
+.font-mono,
+.mono {
+  font-family: var(--font-geist-mono), "Cascadia Code", "Fira Code", monospace;
+}
+
+/* ── Display 1 ── 64px / 850 / -0.04em / lh 1 */
+.type-display1 {
+  font-size: 64px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ── Heading MD ── 44px / 850 / -0.04em / lh 1.2 */
+.type-heading-md {
+  font-size: 44px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ── Heading SM ── 28px / 850 / -0.04em / lh 1.2 */
+.type-heading-sm {
+  font-size: 28px;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ── Body Base ── 20px / 550 / -0.02em / lh 1.5 */
+.type-body-base {
+  font-size: 20px;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+}
+
+/* ── Body Base Semibold ── 20px / bold / -0.02em / lh 1.5 */
+.type-body-base-semibold {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+}
+
+/* ── Body SM ── 16px / medium / -0.02em / lh 1.5 */
+.type-body-sm {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+}
+
+/* ── Body SM Semibold ── 16px / bold / -0.02em / lh 1 */
+.type-body-sm-semibold {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Caption ── 14px / semibold / -0.04em / lh 1 */
+.type-caption {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* ── Overline ── 13px / 640 / -0.04em / lh 1.2 */
+.type-overline {
+  font-size: 13px;
+  font-weight: 640;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }

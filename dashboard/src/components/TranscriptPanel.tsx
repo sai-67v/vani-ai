@@ -46,10 +46,18 @@ export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) 
                 className={`${styles.panel} glass ${isOpen ? styles.open : ""}`}
                 role="complementary"
                 aria-label="Call transcript"
+                style={{
+                    borderTopLeftRadius: '24px',
+                    borderBottomLeftRadius: '24px',
+                    boxShadow: '-12px 0 40px rgba(0,0,0,0.15)',
+                    borderLeft: '1px solid rgba(255,255,255,0.08)'
+                }}
             >
-                <div className={styles.panelHeader}>
+                <div className="absolute inset-0 bg-gradient-to-tr from-[var(--theme-accent)]/5 to-transparent pointer-events-none opacity-40" aria-hidden />
+                <div className="grain-overlay opacity-20" aria-hidden />
+                <div className={`${styles.panelHeader} relative z-10`}>
                     <div>
-                        <div className={styles.panelTitle}>Transcript</div>
+                        <div className={styles.panelTitle} style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Transcript</div>
                         {call && (
                             <div className={styles.panelSubtitle}>
                                 {call.customer_number ?? "Unknown number"} ·{" "}
@@ -78,12 +86,12 @@ export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) 
                         <span className={styles.scoreLabel}>Lead Score</span>
                         <span
                             className={`badge ${call.lead_score >= 80
-                                    ? "badge-hot"
-                                    : call.lead_score >= 65
-                                        ? "badge-warm"
-                                        : call.lead_score >= 40
-                                            ? "badge-cool"
-                                            : "badge-cold"
+                                ? "badge-hot"
+                                : call.lead_score >= 65
+                                    ? "badge-warm"
+                                    : call.lead_score >= 40
+                                        ? "badge-cool"
+                                        : "badge-cold"
                                 }`}
                             style={{ fontSize: 13, padding: "3px 12px" }}
                         >
