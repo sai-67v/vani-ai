@@ -24,6 +24,7 @@ router.post("/", async (req, res) => {
                 await handleStatusUpdate(message);
                 break;
 
+            case "speech-update":
             case "transcript":
                 await handleTranscript(message);
                 break;
@@ -88,8 +89,9 @@ async function handleStatusUpdate(message) {
 // We only persist "final" transcripts, not partials.
 // ────────────────────────────────────────────────────────────
 async function handleTranscript(message) {
-    // Skip partial transcripts — only store finals
-    if (message.transcriptType !== "final") return;
+    // Temporarily disabled "final" check to see data shape:
+    // if (message.transcriptType !== "final") return;
+    console.log("Transcript Payload:", JSON.stringify(message, null, 2));
 
     const providerCallId = message.call?.id;
     if (!providerCallId) return;
