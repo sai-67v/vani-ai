@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { basicAuthHeader, buildTurnTwiml, xmlResponse } from "@/lib/server/twilio";
 import { sarvamSttFromAudio, sarvamTtsFromText } from "@/lib/server/sarvam";
 import { runLlm } from "@/lib/server/llm";
@@ -6,6 +5,12 @@ import { uploadAudioToSupabase } from "@/lib/server/storage";
 import { getSupabaseServer } from "@/lib/server/supabaseServer";
 
 export async function POST(request: Request) {
+    const url = new URL(request.url);
+    const turnParam = Number.parseInt(url.searchParams.get("turn") ?? "0", 10);
+    const turn = Number.isFinite(turnParam) && turnParam >= 0 ? turnParam : 0;
+    const nextTurn = turn + 1;
+    const maxTurns = 4;
+
     const form = await request.formData();
     const callSid = (form.get("CallSid") as string) || "";
     const from = (form.get("From") as string) || null;
@@ -28,6 +33,7 @@ export async function POST(request: Request) {
     let ttsUrl: string | null = null;
     let summary = "";
     let intent = "";
+    let hadProcessingError = false;
 
     // Download recording
     if (recordingUrl && accountSid && authToken) {
@@ -35,24 +41,29 @@ export async function POST(request: Request) {
             const res = await fetch(recordingUrl, {
                 headers: { Authorization: basicAuthHeader(accountSid, authToken) },
             });
+            if (!res.ok) throw new Error(`recording_fetch_${res.status}`);
             const audioBuf = Buffer.from(await res.arrayBuffer());
 
             // STT
             const stt = await sarvamSttFromAudio(audioBuf, res.headers.get("content-type") || "audio/wav");
             if (stt.text) {
                 userText = stt.text;
+            } else if (stt.error) {
+                hadProcessingError = true;
+                console.error("[processTurn] stt_failed", { callSid, turn, error: stt.error });
             }
 
             // LLM
-            const llm = await runLlm(
-                `Caller said: "${userText || "(empty)"}". Return concise JSON with replyText, lead (hot|warm|cold), emotion (positive|neutral|negative), summary, intent.`
-            );
+            const llm = await runLlm(userText || "No speech detected.");
             if (llm) {
                 replyText = llm.replyText;
-                leadScore = mapLeadToScore(llm.lead);
-                emotionScore = mapEmotionToScore(llm.emotion);
+                leadScore = mapLeadToScore(llm.leadScore);
+                emotionScore = mapEmotionToScore(llm.emotionScore);
                 summary = llm.summary || userText;
                 intent = llm.intent || "";
+            } else {
+                hadProcessingError = true;
+                console.error("[processTurn] llm_failed", { callSid, turn });
             }
 
             // TTS
@@ -60,10 +71,22 @@ export async function POST(request: Request) {
             if (tts.audio) {
                 const fname = `twilio-tts/${callSid}-${Date.now()}.mp3`;
                 ttsUrl = await uploadAudioToSupabase(fname, tts.audio, tts.contentType || "audio/mpeg");
+            } else if (tts.error) {
+                hadProcessingError = true;
+                console.error("[processTurn] tts_failed", { callSid, turn, error: tts.error });
             }
         } catch (err) {
-            console.error("[processTurn]", err);
+            hadProcessingError = true;
+            console.error("[processTurn]", { callSid, turn, error: err });
         }
+    } else {
+        hadProcessingError = true;
+        console.error("[processTurn] missing_recording_or_auth", { callSid, turn, hasRecording: Boolean(recordingUrl) });
+    }
+
+    const shouldHangup = !baseUrl || nextTurn >= maxTurns;
+    if (shouldHangup && hadProcessingError) {
+        replyText = "Thanks for calling. Please try again later.";
     }
 
     // Supabase logging
@@ -78,10 +101,13 @@ export async function POST(request: Request) {
         emotionScore,
         summary,
         intent,
+        status: shouldHangup ? "ended" : "in-progress",
+        startedAt: turn === 0 ? new Date().toISOString() : null,
+        endedAt: shouldHangup ? new Date().toISOString() : null,
     });
 
-    const redirectUrl = baseUrl ? `${baseUrl}/api/twilio/voice` : null;
-    const twiml = buildTurnTwiml(ttsUrl, redirectUrl, replyText);
+    const redirectUrl = !shouldHangup && baseUrl ? `${baseUrl}/api/twilio/voice?turn=${nextTurn}` : null;
+    const twiml = buildTurnTwiml(ttsUrl, redirectUrl, replyText, shouldHangup);
     return xmlResponse(twiml);
 }
 
@@ -108,25 +134,31 @@ async function upsertCallAndTranscript(params: {
     emotionScore: number;
     summary: string;
     intent: string;
+    status: "in-progress" | "ended";
+    startedAt: string | null;
+    endedAt: string | null;
 }) {
     const supabase = getSupabaseServer();
     if (!supabase) return;
 
     try {
+        const payload: Record<string, any> = {
+            provider_call_id: params.callSid,
+            provider: "twilio",
+            customer_number: params.from,
+            to_number: params.to,
+            status: params.status,
+            lead_score: params.leadScore,
+            emotion_score: params.emotionScore,
+            recording_url: params.recordingUrl,
+            summary: params.summary || null,
+        };
+        if (params.startedAt) payload.started_at = params.startedAt;
+        if (params.endedAt) payload.ended_at = params.endedAt;
+
         const { data: callRow } = await supabase
             .from("calls")
-            .upsert({
-                provider_call_id: params.callSid,
-                provider: "twilio",
-                customer_number: params.from,
-                to_number: params.to,
-                status: "in-progress",
-                lead_score: params.leadScore,
-                emotion_score: params.emotionScore,
-                recording_url: params.recordingUrl,
-                summary: params.summary || null,
-                started_at: new Date().toISOString(),
-            }, { onConflict: "provider_call_id" })
+            .upsert(payload, { onConflict: "provider_call_id" })
             .select("id")
             .single();
 
@@ -154,7 +186,7 @@ async function upsertCallAndTranscript(params: {
             }).throwOnError();
         }
     } catch (err) {
-        console.error("[upsertCallAndTranscript]", err);
+        console.error("[upsertCallAndTranscript]", { callSid: params.callSid, error: err });
     }
 }
 

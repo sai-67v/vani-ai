@@ -1,52 +1,77 @@
-const LLM_ENDPOINT = process.env.LLM_ENDPOINT || "https://api.openai.com/v1/chat/completions";
-const LLM_MODEL = process.env.LLM_MODEL || "gpt-4o-mini";
-const LLM_API_KEY = process.env.LLM_API_KEY || process.env.OPENAI_API_KEY || "";
+import { SarvamAIClient } from "sarvamai";
+
+const sarvamKey = process.env.SARVAM_API_KEY || "";
 
 export type LlmResponse = {
     replyText: string;
-    lead: "hot" | "warm" | "cold";
-    emotion: "positive" | "neutral" | "negative";
+    leadScore: "hot" | "warm" | "cold";
+    emotionScore: "positive" | "neutral" | "negative";
     summary: string;
     intent: string;
 };
 
-export async function runLlm(prompt: string): Promise<LlmResponse | null> {
-    if (!LLM_API_KEY) return null;
+const SYSTEM_PROMPT = `You are a concise voice agent on a live phone call.
+Reply in 1-2 short sentences. Return ONLY a JSON object with this exact shape:
+{
+  "replyText": string,
+  "leadScore": "hot" | "warm" | "cold",
+  "emotionScore": "positive" | "neutral" | "negative",
+  "intent": string,
+  "summary": string
+}`;
+
+export async function runLlm(userText: string): Promise<LlmResponse | null> {
+    if (!sarvamKey) return null;
     try {
-        const res = await fetch(LLM_ENDPOINT, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${LLM_API_KEY}`,
-            },
-            body: JSON.stringify({
-                model: LLM_MODEL,
-                messages: [
-                    {
-                        role: "system",
-                        content:
-                            "You are a concise voice agent. Respond with a short helpful reply. Output JSON with keys replyText, lead (hot|warm|cold), emotion (positive|neutral|negative), summary, intent.",
-                    },
-                    { role: "user", content: prompt },
-                ],
-                temperature: 0.4,
-                response_format: { type: "json_object" },
-            }),
+        const client = new SarvamAIClient({ apiSubscriptionKey: sarvamKey });
+        const response = await client.chat.completions({
+            messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: userText || "" },
+            ],
+            temperature: 0.2,
         });
-        if (!res.ok) throw new Error(`LLM ${res.status}`);
-        const data = await res.json();
-        const content = data?.choices?.[0]?.message?.content;
+
+        const content = response?.choices?.[0]?.message?.content;
         if (!content) return null;
-        const parsed = JSON.parse(content);
+        const parsed = safeParseJson(content);
+        if (!parsed) return null;
+
         return {
-            replyText: parsed.replyText || parsed.reply || "Thanks for calling.",
-            lead: parsed.lead || "warm",
-            emotion: parsed.emotion || "neutral",
-            summary: parsed.summary || "",
-            intent: parsed.intent || "",
+            replyText: normalizeString(parsed.replyText) || "Thanks for calling.",
+            leadScore: normalizeLead(parsed.leadScore),
+            emotionScore: normalizeEmotion(parsed.emotionScore),
+            summary: normalizeString(parsed.summary) || "",
+            intent: normalizeString(parsed.intent) || "",
         };
     } catch (err: any) {
         console.error("[runLlm]", err?.message || err);
         return null;
     }
+}
+
+function safeParseJson(raw: string) {
+    const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) return null;
+    try {
+        return JSON.parse(cleaned.slice(start, end + 1));
+    } catch {
+        return null;
+    }
+}
+
+function normalizeLead(value: unknown): LlmResponse["leadScore"] {
+    if (value === "hot" || value === "warm" || value === "cold") return value;
+    return "warm";
+}
+
+function normalizeEmotion(value: unknown): LlmResponse["emotionScore"] {
+    if (value === "positive" || value === "neutral" || value === "negative") return value;
+    return "neutral";
+}
+
+function normalizeString(value: unknown) {
+    return typeof value === "string" ? value.trim() : "";
 }
