@@ -12,18 +12,25 @@ export function buildVoiceTwiml(actionUrl: string, greeting?: string) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   ${say}
-  <Record playBeep="false" maxLength="8" trim="trim-silence" action="${actionUrl}" method="POST" />
+  <Record playBeep="true" maxLength="8" trim="trim-silence" action="${actionUrl}" method="POST" />
 </Response>`;
 }
 
-export function buildTurnTwiml(playUrl: string | null, redirectUrl: string | null, sayFallback?: string) {
+export function buildTurnTwiml(
+    playUrl: string | null,
+    redirectUrl: string | null,
+    sayFallback?: string,
+    hangup?: boolean
+) {
     const play = playUrl ? `<Play>${escapeXml(playUrl)}</Play>` : "";
     const say = !playUrl && sayFallback ? `<Say voice="Polly.Joanna">${escapeXml(sayFallback)}</Say>` : "";
     const redirect = redirectUrl ? `<Redirect method="POST">${escapeXml(redirectUrl)}</Redirect>` : "";
+    const hangupTag = hangup ? `<Hangup />` : "";
     return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   ${play || say}
   ${redirect}
+  ${hangupTag}
 </Response>`;
 }
 
