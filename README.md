@@ -107,7 +107,7 @@ Deployment	Vercel / Cloudflare
 
 ---
 
-##🧩 Dashboard Intelligence
+## 🧩 Dashboard Intelligence
 
 Call Emotion Analysis
 
