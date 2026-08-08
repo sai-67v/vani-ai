@@ -28,7 +28,8 @@ Output your response STRICTLY as a JSON object with this shape, and NO formattin
             { role: "system", content: systemPrompt },
             { role: "user", content: userText }
         ],
-        temperature: 0.1
+        temperature: 0.1,
+        max_tokens: 60
     });
 
     const rawContent = response.choices?.[0]?.message?.content || "{}";
@@ -52,6 +53,60 @@ Output your response STRICTLY as a JSON object with this shape, and NO formattin
     return parsedData;
 }
 
+/**
+ * Strict schema analysis of the transcript.
+ * @param {string} userText 
+ * @returns {Promise<{replyText: string, leadScore: number, emotion: string, intent: string, nextBestAction: string, summary: string}>}
+ */
+async function analyzeTranscript(userText) {
+    const apiKey = process.env.SARVAM_API_KEY;
+    if (!apiKey) throw new Error("SARVAM_API_KEY is not set in environment");
+
+    const client = new SarvamAIClient({ apiSubscriptionKey: apiKey });
+
+    const systemPrompt = `You are a helpful Voice AI agent analyzing a phone call.
+Keep your answer short and structured. 
+Output your response STRICTLY as a JSON object with EXACTLY these 6 keys, and NO formatting markdown blocks:
+{
+  "replyText": "your spoken reply here (leave empty string if not applicable)",
+  "leadScore": 50, // integer (0-100)
+  "emotion": "positive", // one of: "positive", "neutral", "negative", "frustrated", "excited"
+  "intent": "question", // one of: "question", "booking", "complaint", "greeting", "pricing", "objection", "unknown"
+  "nextBestAction": "Schedule follow-up demo", // short string
+  "summary": "1-sentence recap" // short string
+}`;
+
+    const response = await client.chat.completions.create({
+        model: "sarvam-1",
+        messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userText }
+        ],
+        temperature: 0.1
+    });
+
+    const rawContent = response.choices?.[0]?.message?.content || "{}";
+    let parsedData = {};
+
+    try {
+        const cleanContent = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+        parsedData = JSON.parse(cleanContent);
+    } catch (err) {
+        console.error("[Sarvam LLM] Failed to parse JSON. Raw Output:", rawContent);
+        parsedData = {
+            replyText: "",
+            leadScore: 50,
+            emotion: "neutral",
+            intent: "unknown",
+            nextBestAction: "Review call manually",
+            summary: "Error parsing LLM response"
+        };
+    }
+
+    return parsedData;
+}
+
 module.exports = {
-    generateResponse
+    generateResponse,
+    analyzeTranscript
 };

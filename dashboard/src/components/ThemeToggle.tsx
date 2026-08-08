@@ -5,30 +5,27 @@ import { Moon, Sun } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function ThemeToggle() {
-    const [theme, setTheme] = useState("light"); // Default light mode
+    const [theme, setTheme] = useState<"light" | "dark">("dark");
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        // Sync with document on mount
-        if (document.documentElement.classList.contains("dark")) {
-            setTheme("dark");
-        } else {
-            // Default to light
-            document.documentElement.classList.remove("dark");
-            document.documentElement.style.colorScheme = "light";
-        }
+        const stored = typeof window !== "undefined" ? localStorage.getItem("vani_theme") : null;
+        const preferred = stored === "light" ? "light" : "dark";
+        setTheme(preferred);
+        document.documentElement.classList.toggle("dark", preferred === "dark");
+        document.documentElement.style.colorScheme = preferred === "dark" ? "dark" : "light";
     }, []);
 
     const toggleTheme = () => {
-        if (theme === "dark") {
-            setTheme("light");
-            document.documentElement.classList.remove("dark");
-            document.documentElement.style.colorScheme = "light";
-        } else {
-            setTheme("dark");
-            document.documentElement.classList.add("dark");
-            document.documentElement.style.colorScheme = "dark";
+        const next = theme === "dark" ? "light" : "dark";
+        setTheme(next);
+        document.documentElement.classList.toggle("dark", next === "dark");
+        document.documentElement.style.colorScheme = next === "dark" ? "dark" : "light";
+        try {
+            localStorage.setItem("vani_theme", next);
+        } catch {
+            // ignore storage errors
         }
     };
 

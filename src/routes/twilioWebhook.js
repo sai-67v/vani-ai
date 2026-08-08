@@ -1,120 +1,90 @@
 const express = require("express");
 const VoiceResponse = require("twilio").twiml.VoiceResponse;
+const { analyzeVoicePayload } = require("../lib/voiceAnalysis");
+const { upsertCall, recordAnalysis } = require("../lib/callStore");
+const logger = require("../lib/logger");
+const { getTwilioClient } = require("../lib/twilioClient");
 
 const router = express.Router();
 
-// POST /api/twilio/voice
-// Twilio calls this when a user dials in
+function getBaseUrl(req) {
+    return process.env.PUBLIC_BASE_URL || `https://${req.get("host")}`;
+}
+
 router.post("/voice", (req, res) => {
     const twiml = new VoiceResponse();
-    const baseUrl = process.env.PUBLIC_BASE_URL || `https://${req.get("host")}`;
+    const { CallSid, From, To } = req.body || {};
+    const direction = typeof From === "string" && From.startsWith("client:") ? "wifi" : "inbound";
 
-    console.log(`[twilio-voice] Incoming call...`);
+    if (CallSid) {
+        upsertCall(CallSid, {
+            callId: CallSid,
+            from: From || "Unknown",
+            to: To || "Unknown",
+            direction,
+            status: "in-progress",
+        });
+    }
 
-    twiml.say("Connecting you to Vani A I... Please begin speaking after the beep.");
+    logger.info("twilio.webhook", "Inbound call received", { direction, callSid: CallSid || "unknown" });
 
+    twiml.say("You are speaking with Vaani AI. Share your message after the tone.");
     twiml.record({
-        maxLength: 8,
-        playBeep: true,
+        action: `${getBaseUrl(req)}/api/twilio/processTurn`,
         method: "POST",
-        action: `${baseUrl}/api/twilio/processTurn`
+        playBeep: true,
+        maxLength: 90,
+        timeout: 5,
+        trim: "trim-silence",
     });
 
-    res.type("text/xml");
-    res.send(twiml.toString());
+    res.type("text/xml").send(twiml.toString());
 });
 
-// POST /api/twilio/processTurn
-// Twilio calls this after gathering <Record> audio
 router.post("/processTurn", async (req, res) => {
-    const { CallSid, From, To, RecordingUrl } = req.body;
-    console.log(`[twilio-processTurn] Call: ${CallSid} | Audio: ${RecordingUrl}`);
-
+    const { CallSid, From, To, RecordingUrl } = req.body || {};
     const twiml = new VoiceResponse();
-    const baseUrl = process.env.PUBLIC_BASE_URL || `https://${req.get("host")}`;
+    const audioUrl = RecordingUrl
+        ? RecordingUrl.endsWith(".wav") || RecordingUrl.endsWith(".mp3")
+            ? RecordingUrl
+            : `${RecordingUrl}.wav`
+        : null;
 
-    if (!RecordingUrl) {
-        twiml.say("Sorry, I could not hear you. Please try again.");
-        twiml.redirect({ method: "POST" }, `${baseUrl}/api/twilio/voice`);
-        res.type("text/xml");
-        return res.send(twiml.toString());
-    }
+    logger.info("twilio.webhook", "Processing turn", { callSid: CallSid || "unknown", audioUrl });
 
     try {
-        // Agent 2: Load services
-        const { transcribeAudio } = require("../lib/sarvam/stt");
-        const { generateResponse } = require("../lib/sarvam/llm");
-        const { textToSpeech } = require("../lib/sarvam/tts");
-        const { db } = require("../lib/supabase/admin");
-
-        // 1. Download audio from Twilio
-        const authHeader = "Basic " + Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString("base64");
-        const audioRes = await fetch(`${RecordingUrl}.wav`, {
-            headers: { "Authorization": authHeader }
-        });
-        const audioBuffer = await audioRes.buffer();
-
-        // 2. STT 
-        const sttResult = await transcribeAudio(audioBuffer);
-        const userText = sttResult.text || "";
-        console.log(`[Twilio->Sarvam] User said: "${userText}"`);
-
-        // 3. LLM (JSON)
-        const llmResult = await generateResponse(userText);
-        console.log(`[Sarvam LLM] Generated Reply:`, llmResult);
-
-        // 4. TTS (Buffer)
-        const ttsBuffer = await textToSpeech(llmResult.replyText, "en-IN");
-
-        // 5. Upload TTS audio to Supabase Storage
-        const fileName = `reply-${CallSid}-${Date.now()}.wav`;
-        await db.storage.from("audio-replies").upload(fileName, ttsBuffer, {
-            contentType: "audio/wav",
-            upsert: true
-        });
-        const { data: publicUrlData } = db.storage.from("audio-replies").getPublicUrl(fileName);
-        const generatedAudioUrl = publicUrlData.publicUrl;
-
-        // 6. Log Turn to Supabase
-        const { data: callData, error: callError } = await db.from("calls").upsert({
-            provider_call_id: CallSid,
-            provider: "twilio",
-            customer_number: From || "",
-            to_number: To || "",
-            status: "in-progress",
-            lead_score: llmResult.leadScore,
-            emotion_score: llmResult.emotionScore,
-            summary: llmResult.summary
-        }, { onConflict: "provider_call_id" }).select("id").single();
-
-        if (callError) {
-            console.error("[Supabase Calls] Error:", callError);
+        if (!audioUrl) {
+            throw new Error("recording_missing");
         }
 
-        const callId = callData?.id;
+        upsertCall(CallSid, {
+            callId: CallSid,
+            from: From || "Unknown",
+            to: To || "Unknown",
+            direction: typeof From === "string" && From.startsWith("client:") ? "wifi" : "inbound",
+            audioUrl,
+            status: "completed",
+        });
 
-        if (callId) {
-            await db.from("transcripts").insert([
-                { call_id: callId, speaker: "user", text: userText, ts: new Date().toISOString() },
-                { call_id: callId, speaker: "assistant", text: llmResult.replyText, ts: new Date().toISOString() }
-            ]);
-        }
+        const analysis = await analyzeVoicePayload({
+            callId: CallSid,
+            audioUrl,
+            languageHint: req.body?.Language || req.body?.RecordingTrack,
+            source: "twilio-inbound",
+        });
+        recordAnalysis(CallSid, analysis);
 
-        // 7. Play Audio & Continue Turn
-        twiml.play(generatedAudioUrl);
-        twiml.redirect({ method: "POST" }, `${baseUrl}/api/twilio/voice`);
-    } catch (err) {
-        console.error(`[twilio-processTurn] Error for ${CallSid}:`, err);
-        twiml.say("System error encountered. Let's restart.");
-        twiml.redirect({ method: "POST" }, `${baseUrl}/api/twilio/voice`);
+        twiml.say("Thanks for telling us more. Our AI analyst captured the insights.");
+        twiml.hangup();
+    } catch (error) {
+        logger.error("twilio.webhook", "Error processing turn", { error: error?.message });
+        twiml.say("We couldn't process that audio. Please try again later.");
+        twiml.hangup();
     }
 
-    res.type("text/xml");
-    res.send(twiml.toString());
+    res.type("text/xml").send(twiml.toString());
 });
 
-// POST /api/twilio/dial
-// Dashboard calls this to trigger an outbound call (kept for existing functionality)
 router.post("/dial", async (req, res) => {
     try {
         const { to } = req.body;
@@ -124,24 +94,29 @@ router.post("/dial", async (req, res) => {
         const authToken = process.env.TWILIO_AUTH_TOKEN;
         const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
-        if (!accountSid || !authToken || !fromNumber) {
-            return res.status(500).json({ error: "Twilio credentials missing in .env" });
+        if (!fromNumber) {
+            return res.status(500).json({ error: "TWILIO_PHONE_NUMBER missing in .env" });
         }
 
-        const client = require("twilio")(accountSid, authToken);
-        const baseUrl = process.env.PUBLIC_BASE_URL || `https://${req.get("host")}`;
-
+        const client = getTwilioClient();
         const call = await client.calls.create({
-            url: `${baseUrl}/api/twilio/voice`,
-            to: to,
-            from: fromNumber
+            url: `${getBaseUrl(req)}/api/twilio/voice`,
+            to,
+            from: fromNumber,
         });
 
-        console.log(`[twilio-dial] Initiated call to ${to}, CallSid: ${call.sid}`);
+        upsertCall(call.sid, {
+            callId: call.sid,
+            direction: "outbound",
+            from: fromNumber,
+            to,
+            status: "queued",
+        });
+
         res.json({ success: true, callSid: call.sid });
-    } catch (err) {
-        console.error("[twilio-dial] Error:", err);
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        logger.error("twilio.webhook", "Dial error", { error: error?.message });
+        res.status(500).json({ error: error.message });
     }
 });
 

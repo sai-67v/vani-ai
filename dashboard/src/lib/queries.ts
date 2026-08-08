@@ -9,7 +9,7 @@ import {
     MOCK_CALLBACKS,
     computeMockKpis,
 } from "./mock-data";
-import type { Call, Transcript, CallbackQueueItem, KpiData } from "./types";
+import type { Call, Transcript, CallbackQueueItem, KpiData, CallInsight } from "./types";
 
 const PAGE_SIZE = 10;
 
@@ -54,6 +54,7 @@ export async function fetchKpis(demoMode = false): Promise<KpiData> {
         const liveCount = totalCalls ?? 0;
 
         if (demoMode) {
+            console.log("[queries] fetchKpis (demo mode) success");
             if (liveCount === 0) {
                 return mock;
             } else {
@@ -66,13 +67,15 @@ export async function fetchKpis(demoMode = false): Promise<KpiData> {
             }
         }
 
+        console.log("[queries] fetchKpis success");
         return {
             totalCalls: liveCount,
             qualified: qualified ?? 0,
             callbacksPending: callbacksPending ?? 0,
             avgDurationSeconds: avgDurationSeconds,
         };
-    } catch {
+    } catch (error) {
+        console.error("[queries] fetchKpis error", error);
         return demoMode ? computeMockKpis() : emptyKpi;
     }
 }
@@ -122,11 +125,13 @@ export async function fetchCalls(
             }
         }
 
+        console.log(`[queries] fetchCalls success (total: ${totalCount})`);
         return {
             data: combined.slice(from, to + 1),
             count: totalCount
         };
-    } catch {
+    } catch (error) {
+        console.error("[queries] fetchCalls error", error);
         return demoMode ? {
             data: MOCK_CALLS.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
             count: MOCK_CALLS.length,
@@ -152,8 +157,10 @@ export async function fetchTranscript(callId: string): Promise<Transcript[]> {
             .order("ts", { ascending: true });
 
         if (error) throw error;
+        console.log(`[queries] fetchTranscript success length: ${data?.length}`);
         return data ?? [];
-    } catch {
+    } catch (error) {
+        console.error("[queries] fetchTranscript error", error);
         return [];
     }
 }
@@ -183,8 +190,10 @@ export async function fetchCallbacks(demoMode = false): Promise<CallbackQueueIte
             return liveCallbacks.length === 0 ? MOCK_CALLBACKS : [...liveCallbacks, ...MOCK_CALLBACKS];
         }
 
+        console.log(`[queries] fetchCallbacks success (count: ${liveCallbacks.length})`);
         return liveCallbacks;
-    } catch {
+    } catch (error) {
+        console.error("[queries] fetchCallbacks error", error);
         return demoMode ? MOCK_CALLBACKS : [];
     }
 }
@@ -201,4 +210,23 @@ export async function updateCallbackStatus(
         .eq("id", id);
 
     if (error) console.error("[updateCallbackStatus]", error);
+}
+
+export async function fetchInsight(callId: string): Promise<CallInsight | null> {
+    if (!supabase) return null; // handle demo mode if needed
+
+    try {
+        const { data, error } = await supabase
+            .from("call_insights")
+            .select("*")
+            .eq("call_id", callId)
+            .maybeSingle();
+
+        if (error) throw error;
+        console.log(`[queries] fetchInsight success for ${callId}`, data ? 'found' : 'not found');
+        return data as CallInsight | null;
+    } catch (error) {
+        console.error(`[queries] fetchInsight error for ${callId}`, error);
+        return null;
+    }
 }

@@ -5,15 +5,24 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "test": "jest src/index.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "form-data": "^4.0.5",
+    "playwright": "^1.58.2",
     "sarvamai": "^1.1.4",
     "twilio": "^5.12.2",
-    "ws": "^8.19.0"
+    "wavefile": "^11.0.0",
+    "ws": "^8.19.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2"
   }
 }

@@ -1,13 +1,16 @@
-"use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./TranscriptPanel.module.css";
-import type { Call, Transcript } from "@/lib/types";
+import type { Call, Transcript, CallInsight } from "@/lib/types";
+import { InsightBadges } from "./InsightBadges";
 
 interface Props {
     call: Call | null;
     transcripts: Transcript[];
     loading: boolean;
+    insight: CallInsight | null;
+    insightLoading: boolean;
     onClose: () => void;
+    isLive?: boolean;
 }
 
 function fmtTime(iso: string) {
@@ -18,7 +21,7 @@ function fmtTime(iso: string) {
     });
 }
 
-export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) {
+export function TranscriptPanel({ call, transcripts, loading, insight, insightLoading, onClose, isLive }: Props) {
     // Close on Escape key
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
@@ -29,6 +32,14 @@ export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) 
     }, [onClose]);
 
     const isOpen = !!call;
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll logic when live
+    useEffect(() => {
+        if (isLive && scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [transcripts, isLive]);
 
     return (
         <>
@@ -57,7 +68,14 @@ export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) 
                 <div className="grain-overlay opacity-20" aria-hidden />
                 <div className={`${styles.panelHeader} relative z-10`}>
                     <div>
-                        <div className={styles.panelTitle} style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Transcript</div>
+                        <div className={`${styles.panelTitle} flex items-center gap-2`} style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>
+                            Transcript
+                            {isLive && (
+                                <span className={styles.listeningBadge}>
+                                    <span className={styles.pulseDot} /> Listening...
+                                </span>
+                            )}
+                        </div>
                         {call && (
                             <div className={styles.panelSubtitle}>
                                 {call.customer_number ?? "Unknown number"} ·{" "}
@@ -80,28 +98,15 @@ export function TranscriptPanel({ call, transcripts, loading, onClose }: Props) 
                     </div>
                 )}
 
-                {/* Lead score pill */}
-                {call?.lead_score != null && (
-                    <div className={styles.scoreBanner}>
-                        <span className={styles.scoreLabel}>Lead Score</span>
-                        <span
-                            className={`badge ${call.lead_score >= 80
-                                ? "badge-hot"
-                                : call.lead_score >= 65
-                                    ? "badge-warm"
-                                    : call.lead_score >= 40
-                                        ? "badge-cool"
-                                        : "badge-cold"
-                                }`}
-                            style={{ fontSize: 13, padding: "3px 12px" }}
-                        >
-                            {call.lead_score}/100
-                        </span>
+                {/* Real-time Insights Strip */}
+                {call && (
+                    <div style={{ padding: '0 24px', marginBottom: '8px' }}>
+                        <InsightBadges insight={insight} loading={insightLoading} />
                     </div>
                 )}
 
                 {/* Transcript body */}
-                <div className={styles.messages}>
+                <div className={`${styles.messages} ${isLive ? styles.autoScroll : ""}`} ref={scrollRef}>
                     {loading ? (
                         <div className={styles.loadingState}>Loading transcript…</div>
                     ) : transcripts.length === 0 ? (

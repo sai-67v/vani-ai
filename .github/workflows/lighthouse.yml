@@ -1,0 +1,65 @@
+name: Lighthouse CWV
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/lighthouse.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse CWV (Vaani AI dashboard)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Build the production output (what Lighthouse will audit).
+      # Dev-server numbers are meaningless for a performance gate.
+      - name: Build production bundle
+        run: npm run build
+        env:
+          # Skip type-check errors during CI (they are caught by a separate job)
+          NEXT_TELEMETRY_DISABLED: 1
+
+      # Gate on mobile Core Web Vitals — runs 3 times, asserts on the median.
+      # Fails the PR if any budget in lighthouserc.cjs is exceeded.
+      - name: Run Lighthouse CI (mobile)
+        run: npm run lhci
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      # Desktop pass — informational only (warn, not fail)
+      - name: Run Lighthouse CI (desktop)
+        run: npm run lhci
+        env:
+          LHCI_FORM_FACTOR: desktop
+        continue-on-error: true
+
+      # Always upload reports so a red check is debuggable.
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports-${{ github.run_id }}
+          path: dashboard/.lighthouseci
+          if-no-files-found: ignore
+          retention-days: 14

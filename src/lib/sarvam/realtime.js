@@ -1,5 +1,8 @@
 const WebSocket = require('ws');
 const { supabase } = require('../supabase'); // Ensure we can log to Supabase
+const { handleStreamAudio, flushStreamAudio } = require('./realtimeSTT');
+const { pushTranscript } = require('../sseClients');
+
 
 /**
  * Sets up the WebSocket server on the Express HTTP server
@@ -48,8 +51,11 @@ function setupTwilioWebSockets(server) {
                         // If Sarvam sends transcripts
                         else if (msg.type === "transcript" && msg.text && callSid) {
                             console.log(`[Sarvam Transcript] ${msg.role}: ${msg.text}`);
+                            const ts = new Date().toISOString();
+                            // Push to dashboard
+                            pushTranscript(callSid, { speaker: msg.role || "assistant", text: msg.text, ts });
                             // Log to Supabase async, fire & forget
-                            logTranscript(callSid, msg.role || "agent", msg.text);
+                            logTranscript(callSid, msg.role || "assistant", msg.text, ts);
                         }
                     } catch (e) {
                         // Could be binary data or parse error
@@ -82,6 +88,9 @@ function setupTwilioWebSockets(server) {
                     initCallLog(callSid);
                     break;
                 case "media":
+                    // Send to our micro-batch STT
+                    handleStreamAudio(callSid, msg.media.payload);
+
                     // Forward Twilio raw audio chunk to Sarvam
                     if (sarvamWs && sarvamWs.readyState === WebSocket.OPEN) {
                         // We wrap it in whatever JSON Sarvam expects
@@ -93,6 +102,7 @@ function setupTwilioWebSockets(server) {
                     break;
                 case "stop":
                     console.log("[Twilio WS] Stream stopped.");
+                    flushStreamAudio(callSid);
                     if (sarvamWs && sarvamWs.readyState === WebSocket.OPEN) {
                         sarvamWs.close();
                     }
@@ -130,7 +140,7 @@ async function finalizeCall(providerCallId) {
     if (error) console.error("[supabase] finalizeCall error:", error);
 }
 
-async function logTranscript(providerCallId, role, text) {
+async function logTranscript(providerCallId, role, text, ts) {
     if (!providerCallId || !text) return;
     const { data: callRow } = await supabase.from("calls").select("id").eq("provider_call_id", providerCallId).maybeSingle();
 
@@ -139,7 +149,7 @@ async function logTranscript(providerCallId, role, text) {
             call_id: callRow.id,
             speaker: role,
             text,
-            ts: new Date().toISOString()
+            ts: ts || new Date().toISOString()
         });
     }
 }

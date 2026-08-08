@@ -1,0 +1,74 @@
+[
+  {
+    "url": "http://localhost:3100/",
+    "isRepresentativeRun": false,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_23_28.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_23_28.report.json",
+    "summary": {
+      "performance": 0.41,
+      "accessibility": 0.94,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3100/",
+    "isRepresentativeRun": false,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_23_47.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_23_47.report.json",
+    "summary": {
+      "performance": 0.61,
+      "accessibility": 0.94,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3100/login",
+    "isRepresentativeRun": false,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_24_40.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_24_40.report.json",
+    "summary": {
+      "performance": 0.95,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3100/login",
+    "isRepresentativeRun": false,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_24_54.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_24_54.report.json",
+    "summary": {
+      "performance": 0.91,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3100/",
+    "isRepresentativeRun": true,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_24_23.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost--2026_08_08_06_24_23.report.json",
+    "summary": {
+      "performance": 0.58,
+      "accessibility": 0.94,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:3100/login",
+    "isRepresentativeRun": true,
+    "htmlPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_25_09.report.html",
+    "jsonPath": "C:\\Users\\DELL\\Documents\\voice\\dashboard\\.lighthouseci\\localhost-login-2026_08_08_06_25_09.report.json",
+    "summary": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  }
+]

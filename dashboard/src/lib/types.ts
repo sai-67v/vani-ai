@@ -49,3 +49,17 @@ export interface KpiData {
     callbacksPending: number;
     avgDurationSeconds: number;
 }
+
+export interface CallInsight {
+    id: string;
+    call_id: string;
+    reply_text: string | null;
+    lead_score: number | null;
+    emotion: string | null;
+    intent: string | null;
+    next_best_action: string | null;
+    summary: string | null;
+    is_final: boolean;
+    created_at?: string;
+    updated_at?: string;
+}

@@ -3,9 +3,10 @@
     "version": "1.0.0",
     "description": "Voice AI Call Analytics Dashboard",
     "scripts": {
-        "dev": "next dev -p 3002",
+        "dev": "next dev -p 3000",
         "build": "next build",
-        "start": "next start -p 3002"
+        "start": "next start",
+        "lhci": "lhci autorun --config=./lighthouserc.cjs"
     },
     "dependencies": {
         "@radix-ui/react-dialog": "^1.1.15",
@@ -13,6 +14,7 @@
         "@radix-ui/react-slot": "^1.2.4",
         "@supabase/ssr": "^0.8.0",
         "@supabase/supabase-js": "^2.45.0",
+        "@twilio/voice-sdk": "^2.7.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "framer-motion": "^12.34.3",
@@ -23,9 +25,11 @@
         "react-dom": "^19.0.0",
         "sarvamai": "^1.1.4",
         "tailwind-merge": "^3.5.0",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "unicornstudio-react": "^2.0.1-1"
     },
     "devDependencies": {
+        "@lhci/cli": "^0.15.1",
         "@types/node": "^22.0.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",

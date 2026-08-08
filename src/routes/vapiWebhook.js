@@ -1,5 +1,6 @@
 const express = require("express");
 const { supabase } = require("../lib/supabase");
+const logger = require("../lib/logger");
 
 const router = express.Router();
 
@@ -13,11 +14,11 @@ router.post("/", async (req, res) => {
         const { message } = req.body;
 
         if (!message || !message.type) {
-            console.warn("[vapi-webhook] Received payload with no message.type", req.body);
+            logger.warn("vapi.webhook", "Received payload with no message.type", { body: req.body });
             return res.status(200).json({ received: true });
         }
 
-        console.log(`[vapi-webhook] ← ${message.type}`, message.call?.id ?? "");
+        logger.info("vapi.webhook", `Incoming message type: ${message.type}`, { callId: message.call?.id ?? "" });
 
         switch (message.type) {
             case "status-update":
@@ -39,12 +40,12 @@ router.post("/", async (req, res) => {
                 break;
 
             default:
-                console.log(`[vapi-webhook] Unhandled message type: ${message.type}`);
+                logger.info("vapi.webhook", `Unhandled message type: ${message.type}`);
         }
 
         return res.status(200).json({ received: true });
     } catch (err) {
-        console.error("[vapi-webhook] Error processing webhook:", err);
+        logger.error("vapi.webhook", "Error processing webhook", { error: err.message, stack: err.stack });
         // Still return 200 so Vapi doesn't retry endlessly
         return res.status(200).json({ received: true, error: err.message });
     }
@@ -78,9 +79,9 @@ async function handleStatusUpdate(message) {
         .upsert(row, { onConflict: "provider_call_id" });
 
     if (error) {
-        console.error("[status-update] Supabase upsert error:", error);
+        logger.error("vapi.status", "Supabase upsert error", { error: error?.message || error });
     } else {
-        console.log(`[status-update] Upserted call ${providerCallId} → ${status}`);
+        logger.info("vapi.status", "Upserted call status", { providerCallId, status });
     }
 }
 
@@ -91,7 +92,7 @@ async function handleStatusUpdate(message) {
 async function handleTranscript(message) {
     // Temporarily disabled "final" check to see data shape:
     // if (message.transcriptType !== "final") return;
-    console.log("Transcript Payload:", JSON.stringify(message, null, 2));
+    logger.info("vapi.transcript", "Transcript Payload received", { message });
 
     const providerCallId = message.call?.id;
     if (!providerCallId) return;
@@ -140,6 +141,13 @@ async function handleTranscript(message) {
         console.error("[transcript] Insert error:", error);
     } else {
         console.log(`[transcript] Saved: ${message.role} → "${(message.transcript || "").slice(0, 60)}..."`);
+    }
+
+    // ── INNOVATION REAL-TIME ANALYSIS ──
+    if (message.role === "user" && message.transcript && message.transcript.trim() !== "") {
+        processTurnAnalysis(callId, message.transcript).catch(err => {
+            console.error("[transcript] Turn analysis error:", err);
+        });
     }
 }
 
@@ -304,6 +312,13 @@ async function handleEndOfCallReport(message) {
             console.error("[end-of-call-report] STT processing error:", err);
         });
     }
+
+    // ── INNOVATION FINAL ANALYSIS ──
+    if (existing?.id && updateData.summary) {
+        processFinalAnalysis(existing.id, updateData.summary).catch(err => {
+            console.error("[end-of-call-report] Final analysis error:", err);
+        });
+    }
 }
 
 async function processRecording(providerCallId, callId, recordingUrl) {
@@ -336,6 +351,67 @@ async function processRecording(providerCallId, callId, recordingUrl) {
         }
     } else {
         console.warn(`[stt] No transcript returned for call ${providerCallId}`);
+    }
+}
+
+// ────────────────────────────────────────────────────────────
+// INNOVATION PIPELINE: Live & Final Insights
+// ────────────────────────────────────────────────────────────
+
+async function processTurnAnalysis(callId, text) {
+    const { analyzeTranscript } = require("../lib/sarvam/llm");
+    console.log(`[analysis] Analyzing turn for call ${callId}...`);
+    const insights = await analyzeTranscript(text);
+
+    const row = {
+        call_id: callId,
+        reply_text: insights.replyText || null,
+        lead_score: insights.leadScore || 50,
+        emotion: insights.emotion || "neutral",
+        intent: insights.intent || "unknown",
+        next_best_action: insights.nextBestAction || null,
+        summary: insights.summary || null,
+        is_final: false
+    };
+
+    // Upsert using call_id as unique constraint
+    const { error } = await supabase
+        .from("call_insights")
+        // Note: call_insights must have a UNIQUE constraint on call_id in the DB
+        .upsert(row, { onConflict: "call_id" });
+
+    if (error) {
+        console.error("[analysis] call_insights upsert error:", error);
+    } else {
+        console.log(`[analysis] Saved insights for call ${callId} - Intent: ${row.intent}, Emotion: ${row.emotion}`);
+    }
+}
+
+async function processFinalAnalysis(callId, summaryText) {
+    if (!summaryText || summaryText.trim() === "") return;
+    const { analyzeTranscript } = require("../lib/sarvam/llm");
+    console.log(`[analysis] Analyzing FINAL summary for call ${callId}...`);
+    const insights = await analyzeTranscript(summaryText);
+
+    const row = {
+        call_id: callId,
+        reply_text: insights.replyText || null,
+        lead_score: insights.leadScore || 50,
+        emotion: insights.emotion || "neutral",
+        intent: insights.intent || "unknown",
+        next_best_action: insights.nextBestAction || null,
+        summary: insights.summary || null,
+        is_final: true
+    };
+
+    const { error } = await supabase
+        .from("call_insights")
+        .upsert(row, { onConflict: "call_id" });
+
+    if (error) {
+        console.error("[analysis] Final call_insights upsert error:", error);
+    } else {
+        console.log(`[analysis] Saved FINAL insights for call ${callId}`);
     }
 }
 

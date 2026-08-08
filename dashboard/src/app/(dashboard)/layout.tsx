@@ -6,8 +6,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
         <div className="app-shell">
             <aside className="sidebar">
-                <div className="header-logo mb-6 font-bold" style={{ width: 44, height: 44 }}>
-                    <span className="text-xl">▼</span>
+                <div
+                    className="header-logo mb-6 flex items-center justify-center"
+                    style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: "16px",
+                        background: "var(--brand-mint)",
+                        color: "#03040B",
+                        boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)"
+                    }}
+                >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 5l7 14 7-14" />
+                    </svg>
                 </div>
 
                 <div className="sidebar-icon active" title="Dashboard">

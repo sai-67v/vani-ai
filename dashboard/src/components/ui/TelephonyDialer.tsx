@@ -13,9 +13,10 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function TelephonyDialer() {
+export function TelephonyDialer({ onCallStarted }: { onCallStarted?: (callSid: string) => void }) {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [status, setStatus] = useState<"idle" | "calling" | "connected" | "failed">("idle");
+    const [callSid, setCallSid] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const isValid = useMemo(() => {
@@ -30,20 +31,25 @@ export function TelephonyDialer() {
             return;
         }
         setError(null);
+        setCallSid(null);
         setStatus("calling");
+        console.log("[telephony] dialing outbound", { to: phoneNumber });
         try {
-            // Post to our custom Twilio proxy backend
-            const res = await fetch("/api/twilio/dial", {
+            const res = await fetch("/api/twilio/outbound", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ to: phoneNumber.trim() })
             });
             const data = await res.json();
-            if (data.success) {
+            if (data.ok) {
                 setStatus("connected");
+                setCallSid(data.callSid || null);
+                onCallStarted?.(data.callSid);
+                console.log("[telephony] outbound call initiated", { callSid: data.callSid });
             } else {
                 setStatus("failed");
                 setError(data.error || "Call failed. Check Twilio credentials.");
+                console.log("[telephony] outbound call error", { error: data.error, response: data });
             }
         } catch (err) {
             setStatus("failed");
@@ -54,8 +60,8 @@ export function TelephonyDialer() {
     return (
         <Dialog onOpenChange={(open) => { if (!open) setStatus("idle"); }}>
             <DialogTrigger asChild>
-                <button className="btn btn-strong" title="Initiate Twilio Call">
-                    <PhoneForwarded size={16} /> Initiate Outbound Call
+                <button className="btn-strong inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-[0.08em]" title="Initiate Twilio Call">
+                    <PhoneForwarded size={14} /> Initiate Outbound Call
                 </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md bg-[#0f0f10] border border-white/10 shadow-2xl shadow-black/50">
@@ -100,8 +106,9 @@ export function TelephonyDialer() {
                     </Button>
 
                     {status === "connected" && (
-                        <div className="text-sm text-[#DFFF00] mt-2 font-medium">
-                            ✓ Call Initiated Successfully. Twilio is connecting to the Sarvam Bridge.
+                        <div className="space-y-1 text-sm mt-2">
+                            <div className="text-[#DFFF00] font-medium">✓ Call initiated successfully. Twilio is dialing now.</div>
+                            {callSid && <div className="text-white/70 font-mono text-xs">CallSid: {callSid}</div>}
                         </div>
                     )}
                     {status === "failed" && (
