@@ -78,3 +78,35 @@ CREATE TABLE IF NOT EXISTS insights (
   sentiment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ============================================================
+-- Row Level Security (RLS)
+-- ============================================================
+
+-- Enable RLS on all tables
+ALTER TABLE calls         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transcripts   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE callback_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE insights       ENABLE ROW LEVEL SECURITY;
+
+-- Service role bypasses RLS automatically (no policy needed).
+
+-- Anon key: read-only access to calls
+CREATE POLICY "anon can read calls"
+  ON calls FOR SELECT
+  USING (true);
+
+-- Anon key: read-only access to transcripts
+CREATE POLICY "anon can read transcripts"
+  ON transcripts FOR SELECT
+  USING (true);
+
+-- Anon key: read-only access to callback_queue
+CREATE POLICY "anon can read callback_queue"
+  ON callback_queue FOR SELECT
+  USING (true);
+
+-- Anon key: read-only access to insights
+CREATE POLICY "anon can read insights"
+  ON insights FOR SELECT
+  USING (true);

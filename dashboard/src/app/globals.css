@@ -1,9 +1,15 @@
-﻿/* ── Typography System ─────────────────────────────────────────────────────
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Typography System ─────────────────────────────────────────────────────
    Geist Variable Font (via `geist` npm package, injected by layout.tsx)
    Design spec: Display1 64/850/-0.04, HeadingMD 44/850/-0.04, HeadingSM 28/850/-0.04
                 Body Base 20/550/-0.02, Body SM 16/medium/-0.02
                 Caption 14/semibold/-0.04, Overline 13/640/-0.04
-───────────�@layer base {
+─────────── */
+
+@layer base {
   :root {
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
@@ -65,7 +71,11 @@
     --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
     --grain-opacity: 0.04;
     --glow-primary: rgba(2, 132, 199, 0.15);
+
+    /* Brand palette */
+    --brand-mint: #00e5c4;
   }
+
 
   .dark {
     --background: 240 10% 3.9%;

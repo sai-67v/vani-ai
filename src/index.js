@@ -11,6 +11,12 @@ const { randomUUID } = require("crypto");
 const vapiWebhookRouter = require("./routes/vapiWebhook");
 const twilioWebhookRouter = require("./routes/twilioWebhook");
 const { setupTwilioWebSockets } = require("./lib/sarvam/realtime");
+const {
+    router: sarvamProviderRouter,
+    handleTranscriberUpgrade,
+    TRANSCRIBER_PATH,
+} = require("./routes/sarvamProvider");
+const callTriggerRouter = require("./routes/callTrigger");
 const { analyzeVoicePayload } = require("./lib/voiceAnalysis");
 const { seedDemoCall, upsertCall, recordAnalysis, listCalls, getCall } = require("./lib/callStore");
 const { getTwilioClient } = require("./lib/twilioClient");
@@ -79,6 +85,25 @@ function getWebhookBase(req) {
 // ── Middleware ──────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// ── CORS — allow the Next.js dashboard (port 3000) to call this backend ──
+app.use((req, res, next) => {
+    const allowed = ["http://localhost:3000", "http://127.0.0.1:3000"];
+    const origin = req.headers.origin;
+    if (origin && allowed.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+    } else {
+        // Allow requests with no Origin header (same-origin, curl, Postman)
+        res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+    res.setHeader("Access-Control-Max-Age", "600");
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+    next();
+});
 
 // Request correlation IDs — traces a single request through all logs
 app.use((req, _res, next) => {
@@ -247,6 +272,12 @@ app.use("/api/vapi/webhook", vapiWebhookRouter); // Legacy
 app.use("/api/transcript", require("./routes/transcriptSSE"));
 app.use("/api/call_insights", require("./routes/callInsights"));
 
+// ── Sarvam custom-provider HTTP routes (POST /api/synthesize, POST /api/chat/completions)
+app.use("/api", sarvamProviderRouter);
+
+// ── Task 3: Vapi outbound call trigger (POST /api/calls/trigger) ─────────
+app.use("/api", callTriggerRouter);
+
 // ── Centralized Error Handler (MUST be last middleware) ──────
 app.use(errorHandler);
 
@@ -281,6 +312,20 @@ app.get("/health", async (_req, res) => {
 // ── HTTP & WebSockets Server ───────────────────────────────
 const server = http.createServer(app);
 setupTwilioWebSockets(server);
+
+// ── Sarvam Vapi custom-transcriber WebSocket upgrade handler ─
+// Express does not handle WebSocket upgrades; we intercept the raw HTTP `upgrade` event.
+server.on("upgrade", (req, socket, head) => {
+    if (req.url === TRANSCRIBER_PATH || req.url?.startsWith(TRANSCRIBER_PATH + "?")) {
+        const { WebSocketServer } = require("ws");
+        // Create a one-shot WSS to perform the handshake, then hand off to our handler
+        const wss = new WebSocketServer({ noServer: true });
+        wss.handleUpgrade(req, socket, head, (ws) => {
+            handleTranscriberUpgrade(ws, req);
+        });
+    }
+    // All other paths (e.g. /stream for Twilio) are handled by setupTwilioWebSockets above
+});
 
 // ── Start ──────────────────────────────────────────────────
 server.listen(PORT, () => {
