@@ -24,7 +24,7 @@ const router = express.Router();
 
 // ── Constants ────────────────────────────────────────────────
 const SARVAM_STT_WS_URL =
-  "wss://api.sarvam.ai/speech-to-text-translate/streaming";
+  "wss://api.sarvam.ai/speech-to-text/ws?language_code=auto&model=saaras:v3&mode=transcribe";
 const SARVAM_TTS_URL = "https://api.sarvam.ai/text-to-speech";
 const SARVAM_LLM_URL = "https://api.sarvam.ai/v1/chat/completions";
 
@@ -151,7 +151,7 @@ router.post("/synthesize", async (req, res) => {
  * Returns: OpenAI chat completions response (or SSE stream if stream: true)
  *
  * Always injects/overrides:
- *  - model: "sarvam-m"
+ *  - model: "sarvam-105b"
  *  - prepends language-fidelity system message
  *  - reasoning_effort: null (disable Sarvam thinking mode)
  */
@@ -200,7 +200,7 @@ router.post("/chat/completions", async (req, res) => {
   // ── Build upstream request body ────────────────────────────
   const upstreamBody = {
     ...incomingBody,         // preserve temperature, max_tokens, tools, etc.
-    model: "sarvam-m",       // always override model
+    model: "sarvam-105b-conversations", // always override model
     reasoning_effort: null,  // disable thinking mode for live calls
     messages,
   };
@@ -339,14 +339,6 @@ function handleTranscriberUpgrade(ws, req) {
   // ── Sarvam WS lifecycle ──────────────────────────────────
   sarvamWs.on("open", () => {
     logger.info("sarvam.transcriber", "Sarvam STT WS opened", { connId });
-
-    // Send init config message expected by Sarvam Saaras streaming API
-    const initMsg = JSON.stringify({
-      language_code: "unknown",   // auto-detect language
-      sample_rate: 8000,
-      encoding: "LINEAR16",
-    });
-    sarvamWs.send(initMsg);
     sarvamReady = true;
 
     // Flush any audio chunks that arrived before we were ready
@@ -357,7 +349,15 @@ function handleTranscriberUpgrade(ws, req) {
       });
       for (const chunk of pendingChunks) {
         if (sarvamWs.readyState === WebSocket.OPEN) {
-          sarvamWs.send(chunk);
+          sarvamWs.send(
+            JSON.stringify({
+              audio: {
+                data: chunk.toString("base64"),
+                encoding: "audio/wav",
+                sample_rate: 16000,
+              },
+            })
+          );
         }
       }
       pendingChunks.length = 0;
@@ -375,22 +375,23 @@ function handleTranscriberUpgrade(ws, req) {
     }
 
     // Map Sarvam transcript event → Vapi custom-transcriber format
-    // Sarvam fields (best-effort, may vary by API version):
-    //   { transcript, is_final, language_code, ... }
+    // Supports both flat and nested 'data' schemas:
+    //   { type: "data", data: { transcript, is_final, language_code } }
+    const baseData = parsed.data || parsed;
     const transcript =
-      parsed.transcript ??
-      parsed.text ??
-      parsed.display_text ??
+      baseData.transcript ??
+      baseData.text ??
+      baseData.display_text ??
       "";
 
     const isFinal =
-      parsed.is_final ??
-      parsed.isFinal ??
+      baseData.is_final ??
+      baseData.isFinal ??
       false;
 
     const language =
-      parsed.language_code ??
-      parsed.language ??
+      baseData.language_code ??
+      baseData.language ??
       "unknown";
 
     if (!transcript) return; // skip empty events
@@ -455,7 +456,15 @@ function handleTranscriberUpgrade(ws, req) {
     }
 
     if (sarvamReady && sarvamWs.readyState === WebSocket.OPEN) {
-      sarvamWs.send(data);
+      sarvamWs.send(
+        JSON.stringify({
+          audio: {
+            data: data.toString("base64"),
+            encoding: "audio/wav",
+            sample_rate: 16000,
+          },
+        })
+      );
     } else {
       // Buffer until Sarvam is ready (bounded to ~5s of audio at 8kHz/16-bit)
       if (pendingChunks.length < 1000) {

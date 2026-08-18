@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "jest src/index.test.js"
+    "test": "jest src/index.test.js",
+    "tunnel": "ngrok http 3001"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "jest": "^30.2.0",
+    "ngrok": "^5.0.0-beta.2",
     "supertest": "^7.2.2"
   }
 }
