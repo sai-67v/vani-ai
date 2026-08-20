@@ -5,6 +5,7 @@ const { validateEnv } = require("./lib/env");
 validateEnv();
 
 const express = require("express");
+const cors = require("cors");
 const http = require("http");
 const twilio = require("twilio");
 const { randomUUID } = require("crypto");
@@ -18,7 +19,7 @@ const {
 } = require("./routes/sarvamProvider");
 const callTriggerRouter = require("./routes/callTrigger");
 const { analyzeVoicePayload } = require("./lib/voiceAnalysis");
-const { seedDemoCall, upsertCall, recordAnalysis, listCalls, getCall } = require("./lib/callStore");
+const { seedDemoCall, upsertCall, recordAnalysis, listCalls, getCall, normalizeLeadLabel } = require("./lib/callStore");
 const { getTwilioClient } = require("./lib/twilioClient");
 const { errorHandler, ValidationError } = require("./lib/errors");
 const logger = require("./lib/logger");
@@ -87,23 +88,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // ── CORS — allow the Next.js dashboard (port 3000) to call this backend ──
-app.use((req, res, next) => {
-    const allowed = ["http://localhost:3000", "http://127.0.0.1:3000"];
-    const origin = req.headers.origin;
-    if (origin && allowed.includes(origin)) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-    } else {
-        // Allow requests with no Origin header (same-origin, curl, Postman)
-        res.setHeader("Access-Control-Allow-Origin", "*");
-    }
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    res.setHeader("Access-Control-Max-Age", "600");
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-    next();
-});
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Request correlation IDs — traces a single request through all logs
 app.use((req, _res, next) => {
@@ -254,12 +243,110 @@ app.post("/api/analyze/voice", async (req, res, next) => {
     }
 });
 
-app.get("/api/calls", (_req, res) => {
-    res.json({ ok: true, data: listCalls() });
+app.get("/api/calls", async (_req, res) => {
+    try {
+        const { db } = require("./lib/supabase/admin");
+        const { data: dbCalls, error } = await db.from("calls")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            logger.error("api.calls", "Failed to fetch from Supabase", { error });
+            return res.json({ ok: true, data: listCalls() });
+        }
+
+        const formattedCalls = (dbCalls || []).map((call) => {
+            return {
+                callId: call.provider_call_id || call.id,
+                direction: call.provider_call_id?.startsWith("test-") ? "wifi" : "outbound",
+                from: call.customer_number || "Unknown",
+                to: call.to_number || "AI Agent",
+                createdAt: call.created_at || call.started_at,
+                updatedAt: call.updated_at,
+                leadLabel: normalizeLeadLabel(call.lead_score),
+                language: "EN",
+                emotions: call.emotion_score ? [call.emotion_score > 0 ? "Positive" : "Negative"] : [],
+                hasTranscript: true,
+                summary: call.summary || "",
+            };
+        });
+
+        const inMemory = listCalls();
+        const merged = [...formattedCalls];
+        for (const item of inMemory) {
+            if (!merged.some((c) => c.callId === item.callId)) {
+                merged.push(item);
+            }
+        }
+
+        return res.json({ ok: true, data: merged });
+    } catch (err) {
+        logger.error("api.calls", "Exception in /api/calls", { error: err.message });
+        res.json({ ok: true, data: listCalls() });
+    }
 });
 
-app.get("/api/calls/:callId", (req, res) => {
-    const call = getCall(req.params.callId);
+app.get("/api/calls/:callId", async (req, res) => {
+    const callId = req.params.callId;
+    let call = getCall(callId);
+    
+    try {
+        const { db } = require("./lib/supabase/admin");
+        let callQuery = db.from("calls").select("*");
+        if (callId.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)) {
+            callQuery = callQuery.or(`id.eq.${callId},provider_call_id.eq.${callId}`);
+        } else {
+            callQuery = callQuery.eq("provider_call_id", callId);
+        }
+
+        const { data: dbCalls, error: callError } = await callQuery;
+
+        if (callError) {
+            logger.error("api.calls.detail", "Failed to fetch from Supabase", { error: callError });
+        }
+
+        const dbCall = dbCalls && dbCalls[0];
+        if (dbCall) {
+            const { data: dbTranscripts } = await db.from("transcripts")
+                .select("*")
+                .eq("call_id", dbCall.id)
+                .order("ts", { ascending: true });
+
+            const transcriptText = (dbTranscripts || [])
+                .map((t) => `${t.speaker === "agent" ? "Agent" : "Caller"}: ${t.text}`)
+                .join("\n");
+
+            call = {
+                callId: dbCall.provider_call_id || dbCall.id,
+                direction: dbCall.provider_call_id?.startsWith("test-") ? "wifi" : "outbound",
+                from: dbCall.customer_number || "Unknown",
+                to: dbCall.to_number || "AI Agent",
+                createdAt: dbCall.created_at || dbCall.started_at,
+                updatedAt: dbCall.updated_at,
+                leadLabel: normalizeLeadLabel(dbCall.lead_score),
+                language: "EN",
+                emotions: dbCall.emotion_score ? [dbCall.emotion_score > 0 ? "Positive" : "Negative"] : [],
+                hasTranscript: Boolean(transcriptText),
+                summary: dbCall.summary || "",
+                transcript: transcriptText,
+                analysis: {
+                    ok: true,
+                    callId: dbCall.provider_call_id || dbCall.id,
+                    language: "en",
+                    transcript: transcriptText || "No transcript available.",
+                    summary: dbCall.summary || "No summary available.",
+                    lead: { label: normalizeLeadLabel(dbCall.lead_score), score: dbCall.lead_score || 0 },
+                    emotions: dbCall.emotion_score ? [dbCall.emotion_score > 0 ? "Positive" : "Negative"] : [],
+                    faqs: [],
+                    keySignals: []
+                }
+            };
+        }
+    } catch (err) {
+        logger.error("api.calls.detail", "Exception in /api/calls/:callId", { error: err.message });
+    }
+
     if (!call) {
         return res.status(404).json({ ok: false, error: "Call not found" });
     }
