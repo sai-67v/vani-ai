@@ -8,17 +8,16 @@
  * (fail-fast principle — don't let the server silently limp along).
  */
 
-const REQUIRED_VARS = [
-  "TWILIO_ACCOUNT_SID",
-  "TWILIO_AUTH_TOKEN",
-  "TWILIO_PHONE_NUMBER",
-  "TWILIO_API_KEY_SID",
-  "TWILIO_API_KEY_SECRET",
-  "TWILIO_TWIML_APP_SID",
-];
+const REQUIRED_VARS = [];
 
 /** Warn-only vars — server can still start but features will be degraded */
 const OPTIONAL_VARS = [
+  { key: "TWILIO_ACCOUNT_SID", feature: "Twilio calls" },
+  { key: "TWILIO_AUTH_TOKEN", feature: "Twilio calls" },
+  { key: "TWILIO_PHONE_NUMBER", feature: "Twilio calls" },
+  { key: "TWILIO_API_KEY_SID", feature: "Twilio browser token" },
+  { key: "TWILIO_API_KEY_SECRET", feature: "Twilio browser token" },
+  { key: "TWILIO_TWIML_APP_SID", feature: "Twilio browser token" },
   { key: "SUPABASE_URL", feature: "DB writes" },
   { key: "SUPABASE_SERVICE_ROLE_KEY", feature: "DB writes" },
   { key: "SARVAM_API_KEY", feature: "STT/LLM pipeline" },
