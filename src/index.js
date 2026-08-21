@@ -87,6 +87,16 @@ function getWebhookBase(req) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // ── CORS — allow the Next.js dashboard (port 3000) to call this backend ──
 app.use(cors({
   origin: '*',
@@ -256,6 +266,28 @@ app.get("/api/calls", async (_req, res) => {
             return res.json({ ok: true, data: listCalls() });
         }
 
+        // Bulk-load transcript existence for all returned calls in a single query
+        // so hasTranscript reflects actual persisted text (matching the detail endpoint).
+        const callUuids = (dbCalls || []).map((c) => c.id).filter(Boolean);
+        const callsWithTranscript = new Set();
+        if (callUuids.length > 0) {
+            const { data: transcriptRows, error: transcriptError } = await db
+                .from("transcripts")
+                .select("call_id, text")
+                .in("call_id", callUuids);
+            if (transcriptError) {
+                logger.error("api.calls", "Failed to bulk-fetch transcripts", { error: transcriptError });
+                // Leave callsWithTranscript empty — hasTranscript will be false for all,
+                // which is safer than falsely advertising transcripts that may not exist.
+            } else {
+                for (const row of transcriptRows || []) {
+                    if (row.text) {
+                        callsWithTranscript.add(row.call_id);
+                    }
+                }
+            }
+        }
+
         const formattedCalls = (dbCalls || []).map((call) => {
             return {
                 callId: call.provider_call_id || call.id,
@@ -267,18 +299,25 @@ app.get("/api/calls", async (_req, res) => {
                 leadLabel: normalizeLeadLabel(call.lead_score),
                 language: "EN",
                 emotions: call.emotion_score ? [call.emotion_score > 0 ? "Positive" : "Negative"] : [],
-                hasTranscript: true,
+                hasTranscript: callsWithTranscript.has(call.id),
                 summary: call.summary || "",
             };
         });
 
         const inMemory = listCalls();
-        const merged = [...formattedCalls];
+        // Deduplicate by callId — DB rows win over in-memory entries
+        const seenCallIds = new Map();
+        for (const item of formattedCalls) {
+            seenCallIds.set(item.callId, item);
+        }
         for (const item of inMemory) {
-            if (!merged.some((c) => c.callId === item.callId)) {
-                merged.push(item);
+            if (!seenCallIds.has(item.callId)) {
+                seenCallIds.set(item.callId, item);
             }
         }
+        const merged = Array.from(seenCallIds.values())
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .slice(0, 50);
 
         return res.json({ ok: true, data: merged });
     } catch (err) {
@@ -308,41 +347,49 @@ app.get("/api/calls/:callId", async (req, res) => {
 
         const dbCall = dbCalls && dbCalls[0];
         if (dbCall) {
-            const { data: dbTranscripts } = await db.from("transcripts")
+            const { data: dbTranscripts, error: transcriptError } = await db.from("transcripts")
                 .select("*")
                 .eq("call_id", dbCall.id)
                 .order("ts", { ascending: true });
 
-            const transcriptText = (dbTranscripts || [])
-                .map((t) => `${t.speaker === "agent" ? "Agent" : "Caller"}: ${t.text}`)
-                .join("\n");
+            if (transcriptError) {
+                logger.error("api.calls.detail", "Failed to fetch transcripts from Supabase", {
+                    callId: dbCall.id,
+                    error: transcriptError,
+                });
+                // Preserve any existing in-memory call; if none, fall through to the 404 path.
+            } else {
+                const transcriptText = (dbTranscripts || [])
+                    .map((t) => `${t.speaker === "agent" ? "Agent" : "Caller"}: ${t.text}`)
+                    .join("\n");
 
-            call = {
-                callId: dbCall.provider_call_id || dbCall.id,
-                direction: dbCall.provider_call_id?.startsWith("test-") ? "wifi" : "outbound",
-                from: dbCall.customer_number || "Unknown",
-                to: dbCall.to_number || "AI Agent",
-                createdAt: dbCall.created_at || dbCall.started_at,
-                updatedAt: dbCall.updated_at,
-                leadLabel: normalizeLeadLabel(dbCall.lead_score),
-                language: "EN",
-                emotions: dbCall.emotion_score ? [dbCall.emotion_score > 0 ? "Positive" : "Negative"] : [],
-                hasTranscript: Boolean(transcriptText),
-                summary: dbCall.summary || "",
-                transcript: transcriptText,
-                analysis: {
-                    ok: true,
+                call = {
                     callId: dbCall.provider_call_id || dbCall.id,
-                    language: "en",
-                    transcript: transcriptText || "No transcript available.",
-                    summary: dbCall.summary || "No summary available.",
-                    lead: { label: normalizeLeadLabel(dbCall.lead_score), score: dbCall.lead_score || 0 },
+                    direction: dbCall.provider_call_id?.startsWith("test-") ? "wifi" : "outbound",
+                    from: dbCall.customer_number || "Unknown",
+                    to: dbCall.to_number || "AI Agent",
+                    createdAt: dbCall.created_at || dbCall.started_at,
+                    updatedAt: dbCall.updated_at,
+                    leadLabel: normalizeLeadLabel(dbCall.lead_score),
+                    language: "EN",
                     emotions: dbCall.emotion_score ? [dbCall.emotion_score > 0 ? "Positive" : "Negative"] : [],
-                    faqs: [],
-                    keySignals: []
-                }
-            };
-        }
+                    hasTranscript: Boolean(transcriptText),
+                    summary: dbCall.summary || "",
+                    transcript: transcriptText,
+                    analysis: {
+                        ok: true,
+                        callId: dbCall.provider_call_id || dbCall.id,
+                        language: "en",
+                        transcript: transcriptText || "No transcript available.",
+                        summary: dbCall.summary || "No summary available.",
+                        lead: { label: normalizeLeadLabel(dbCall.lead_score), score: dbCall.lead_score || 0 },
+                        emotions: dbCall.emotion_score ? [dbCall.emotion_score > 0 ? "Positive" : "Negative"] : [],
+                        faqs: [],
+                        keySignals: []
+                    }
+                };
+            } // end else (transcript query succeeded)
+        } // end if (dbCall)
     } catch (err) {
         logger.error("api.calls.detail", "Exception in /api/calls/:callId", { error: err.message });
     }
