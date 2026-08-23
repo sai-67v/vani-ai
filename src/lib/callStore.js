@@ -121,4 +121,5 @@ module.exports = {
     listCalls,
     getCall,
     seedDemoCall,
+    normalizeLeadLabel,
 };
