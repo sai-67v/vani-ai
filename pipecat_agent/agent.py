@@ -64,8 +64,7 @@ async def bot(runner_args: RunnerArguments, sector: str = "general"):
     llm = SarvamLLMService(
         api_key=os.getenv("SARVAM_API_KEY"),
         settings=SarvamLLMService.Settings(
-            model="sarvam-105b",
-            max_tokens=60,
+            model="sarvam-m",
         ),
     )
 
