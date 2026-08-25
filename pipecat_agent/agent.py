@@ -6,6 +6,7 @@ from pipecat.frames.frames import LLMRunFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.vad.vad_analyzer import VADParams
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.runner.types import RunnerArguments
@@ -64,7 +65,7 @@ async def bot(runner_args: RunnerArguments, sector: str = "general"):
         api_key=os.getenv("SARVAM_API_KEY"),
         settings=SarvamLLMService.Settings(
             model="sarvam-105b",
-            reasoning_effort=None,  # disable thinking mode — avoids call latency
+            max_tokens=60,
         ),
     )
 
@@ -88,6 +89,9 @@ async def bot(runner_args: RunnerArguments, sector: str = "general"):
         params=PipelineParams(
             audio_in_sample_rate=8000,
             audio_out_sample_rate=8000,
+            audio_out_10ms_chunks=2,
+            vad_enabled=True,
+            vad_params=VADParams(stop_secs=0.3),
         ),
     )
 
