@@ -55,7 +55,7 @@ async def bot(runner_args: RunnerArguments, sector: str = "general"):
         api_key=os.getenv("SARVAM_API_KEY"),
         settings=SarvamTTSService.Settings(
             model="bulbul:v3",
-            speaker="anand",
+            voice="aditya",
             language="en-IN",  # default; will evolve with dynamic switching
         ),
     )
